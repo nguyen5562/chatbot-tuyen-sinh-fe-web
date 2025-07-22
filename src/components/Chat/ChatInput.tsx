@@ -18,15 +18,17 @@ const ChatInput: React.FC<Props> = ({ value, onChange, onSend }) => {
         onSend(value);
       }}
     >
-      <input
-        className={`flex-1 border-none rounded-full px-6 py-3 shadow-lg text-lg outline-none transition-all duration-200 ${focus ? 'ring-4 ring-blue-300' : ''}`}
-        type="text"
-        placeholder="Nhập tin nhắn..."
-        value={value}
-        onChange={e => onChange(e.target.value)}
-        onFocus={() => setFocus(true)}
-        onBlur={() => setFocus(false)}
-      />
+      <div className={`flex-1 flex items-center bg-white border border-gray-200 rounded-full shadow-2xl px-6 py-3 text-lg transition-all duration-200 ${focus ? 'ring-4 ring-blue-200' : ''}`}>
+        <input
+          className="flex-1 bg-transparent border-none outline-none text-gray-900 placeholder-gray-400 text-lg"
+          type="text"
+          placeholder="Nhập tin nhắn..."
+          value={value}
+          onChange={e => onChange(e.target.value)}
+          onFocus={() => setFocus(true)}
+          onBlur={() => setFocus(false)}
+        />
+      </div>
       <button
         type="submit"
         className="bg-blue-600 text-white w-14 h-14 rounded-full flex items-center justify-center text-2xl shadow-lg hover:bg-blue-700 transition-all"
