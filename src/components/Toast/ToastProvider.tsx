@@ -1,21 +1,8 @@
-import React, { createContext, useContext, useState, useCallback } from 'react';
+import React, { useState, useCallback } from 'react';
 import type { ReactNode } from 'react';
 import Toast from './Toast';
-
-export type ToastType = 'success' | 'error' | 'info' | 'warning';
-export type ToastItem = {
-  id: string;
-  message: string;
-  type: ToastType;
-};
-
-type ToastContextType = {
-  showToast: (message: string, type?: ToastType) => void;
-};
-
-const ToastContext = createContext<ToastContextType>({ showToast: () => {} });
-
-export const useToast = () => useContext(ToastContext);
+import { ToastContext } from './toastContext';
+import type { ToastType, ToastItem } from './toastContext';
 
 const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   const [toasts, setToasts] = useState<ToastItem[]>([]);

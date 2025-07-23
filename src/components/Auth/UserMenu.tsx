@@ -1,20 +1,20 @@
-import React, { useState, useRef, useEffect } from 'react';
-import { useNavigate } from 'react-router-dom';
-import { logout, isAdmin, isLoggedIn } from '../../utils/auth';
-import { useToast } from '../Toast/ToastProvider';
-import Avatar from '@mui/material/Avatar';
-import IconButton from '@mui/material/IconButton';
-import Menu from '@mui/material/Menu';
-import MenuItem from '@mui/material/MenuItem';
-import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemText from '@mui/material/ListItemText';
-import Divider from '@mui/material/Divider';
-import Tooltip from '@mui/material/Tooltip';
-import HomeIcon from '@mui/icons-material/Home';
-import LogoutIcon from '@mui/icons-material/Logout';
-import LoginIcon from '@mui/icons-material/Login';
-import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
-import Button from '@mui/material/Button';
+import React, { useState } from "react";
+import { useNavigate } from "react-router-dom";
+import { logout, isLoggedIn } from "../../utils/auth";
+import { useToast } from '../Toast/toastContext';
+import Avatar from "@mui/material/Avatar";
+import IconButton from "@mui/material/IconButton";
+import Menu from "@mui/material/Menu";
+import MenuItem from "@mui/material/MenuItem";
+import ListItemIcon from "@mui/material/ListItemIcon";
+import ListItemText from "@mui/material/ListItemText";
+import Divider from "@mui/material/Divider";
+import Tooltip from "@mui/material/Tooltip";
+import HomeIcon from "@mui/icons-material/Home";
+import LogoutIcon from "@mui/icons-material/Logout";
+import LoginIcon from "@mui/icons-material/Login";
+import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
+import Button from "@mui/material/Button";
 
 interface UserMenuProps {
   onLogout?: () => void;
@@ -25,8 +25,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ onLogout, isAdminPage }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const navigate = useNavigate();
-  const username = localStorage.getItem('user') || 'User';
-  const admin = isAdmin();
+  const username = localStorage.getItem("user") || "User";
   const loggedIn = isLoggedIn();
   const { showToast } = useToast();
 
@@ -38,9 +37,9 @@ const UserMenu: React.FC<UserMenuProps> = ({ onLogout, isAdminPage }) => {
   };
   const handleLogout = () => {
     logout();
-    showToast('Đăng xuất thành công!', 'info');
-    onLogout && onLogout();
-    navigate('/');
+    showToast("Đăng xuất thành công!", "info");
+    if (onLogout) onLogout();
+    navigate("/");
     handleClose();
   };
 
@@ -48,8 +47,12 @@ const UserMenu: React.FC<UserMenuProps> = ({ onLogout, isAdminPage }) => {
     return (
       <>
         <Tooltip title={username} arrow>
-          <IconButton onClick={handleMenu} size="large" sx={{ color: 'white', p: 0 }}>
-            <Avatar sx={{ bgcolor: 'primary.main', width: 40, height: 40 }}>
+          <IconButton
+            onClick={handleMenu}
+            size="large"
+            sx={{ color: "white", p: 0 }}
+          >
+            <Avatar sx={{ bgcolor: "primary.main", width: 40, height: 40 }}>
               <AdminPanelSettingsIcon />
             </Avatar>
           </IconButton>
@@ -63,16 +66,20 @@ const UserMenu: React.FC<UserMenuProps> = ({ onLogout, isAdminPage }) => {
             elevation: 4,
             sx: { borderRadius: 3, minWidth: 200, mt: 1 },
           }}
-          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+          anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+          transformOrigin={{ vertical: "top", horizontal: "right" }}
         >
-          <MenuItem onClick={() => navigate('/') }>
-            <ListItemIcon><HomeIcon color="primary" /></ListItemIcon>
+          <MenuItem onClick={() => navigate("/")}>
+            <ListItemIcon>
+              <HomeIcon color="primary" />
+            </ListItemIcon>
             <ListItemText>Go to home page</ListItemText>
           </MenuItem>
           <Divider />
           <MenuItem onClick={handleLogout}>
-            <ListItemIcon><LogoutIcon color="error" /></ListItemIcon>
+            <ListItemIcon>
+              <LogoutIcon color="error" />
+            </ListItemIcon>
             <ListItemText>Đăng xuất</ListItemText>
           </MenuItem>
         </Menu>
@@ -86,7 +93,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ onLogout, isAdminPage }) => {
         variant="outlined"
         color="inherit"
         startIcon={<LoginIcon />}
-        onClick={() => navigate('/login')}
+        onClick={() => navigate("/login")}
         sx={{ borderRadius: 8, fontWeight: 600, fontSize: 16 }}
       >
         Đăng nhập
@@ -97,8 +104,12 @@ const UserMenu: React.FC<UserMenuProps> = ({ onLogout, isAdminPage }) => {
   return (
     <>
       <Tooltip title={username} arrow>
-        <IconButton onClick={handleMenu} size="large" sx={{ color: 'white', p: 0 }}>
-          <Avatar sx={{ bgcolor: 'primary.main', width: 40, height: 40 }}>
+        <IconButton
+          onClick={handleMenu}
+          size="large"
+          sx={{ color: "white", p: 0 }}
+        >
+          <Avatar sx={{ bgcolor: "primary.main", width: 40, height: 40 }}>
             {username[0].toUpperCase()}
           </Avatar>
         </IconButton>
@@ -112,16 +123,20 @@ const UserMenu: React.FC<UserMenuProps> = ({ onLogout, isAdminPage }) => {
           elevation: 4,
           sx: { borderRadius: 3, minWidth: 200, mt: 1 },
         }}
-        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
-        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
+        anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
+        transformOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        <MenuItem onClick={() => navigate('/admin') }>
-          <ListItemIcon><AdminPanelSettingsIcon color="primary" /></ListItemIcon>
+        <MenuItem onClick={() => navigate("/admin")}>
+          <ListItemIcon>
+            <AdminPanelSettingsIcon color="primary" />
+          </ListItemIcon>
           <ListItemText>Admin</ListItemText>
         </MenuItem>
         <Divider />
         <MenuItem onClick={handleLogout}>
-          <ListItemIcon><LogoutIcon color="error" /></ListItemIcon>
+          <ListItemIcon>
+            <LogoutIcon color="error" />
+          </ListItemIcon>
           <ListItemText>Đăng xuất</ListItemText>
         </MenuItem>
       </Menu>
@@ -129,4 +144,4 @@ const UserMenu: React.FC<UserMenuProps> = ({ onLogout, isAdminPage }) => {
   );
 };
 
-export default UserMenu; 
+export default UserMenu;

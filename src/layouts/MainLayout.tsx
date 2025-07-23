@@ -5,9 +5,11 @@ import { isLoggedIn } from '../utils/auth';
 import AppBar from '@mui/material/AppBar';
 import Toolbar from '@mui/material/Toolbar';
 import Box from '@mui/material/Box';
+import type { Props as ChatPageProps } from '../pages/ChatPage';
+import type { Chat } from '../pages/ChatPage';
 
-const MainLayout: React.FC<{ children: React.ReactElement<any> }> = ({ children }) => {
-  const [chats, setChats] = useState([
+const MainLayout: React.FC<{ children: React.ReactElement }> = ({ children }) => {
+  const [chats, setChats] = useState<Chat[]>([
     {
       id: '1',
       title: 'Cuộc trò chuyện 1',
@@ -26,8 +28,12 @@ const MainLayout: React.FC<{ children: React.ReactElement<any> }> = ({ children 
     },
   ]);
   const [currentChatId, setCurrentChatId] = useState('1');
-  const guestNewChatRef = useRef<() => void>();
-  const setShowInputAtBottomRef = useRef<(v: boolean) => void>();
+  const guestNewChatRef = useRef<() => void>(null);
+  const setShowInputAtBottomRef = useRef<(v: boolean) => void>(null);
+  const [guestChats, setGuestChats] = useState<Chat[]>([
+    { id: 'g1', title: 'Cuộc hội thoại mới', messages: [] },
+  ]);
+  const [guestCurrentChatId, setGuestCurrentChatId] = useState('g1');
 
   const loggedIn = isLoggedIn();
 
@@ -40,17 +46,24 @@ const MainLayout: React.FC<{ children: React.ReactElement<any> }> = ({ children 
       ]);
       setCurrentChatId(newId);
     } else {
-      guestNewChatRef.current && guestNewChatRef.current();
+      const newId = 'g' + Date.now().toString();
+      setGuestChats(prev => [
+        { id: newId, title: 'Cuộc hội thoại mới', messages: [] },
+        ...prev,
+      ]);
+      setGuestCurrentChatId(newId);
     }
-    setShowInputAtBottomRef.current && setShowInputAtBottomRef.current(false);
+    if (setShowInputAtBottomRef.current) setShowInputAtBottomRef.current(false);
   };
 
   // Hàm reset khi logout
   const handleLogout = () => {
     setChats([]);
     setCurrentChatId('');
-    guestNewChatRef.current && guestNewChatRef.current();
-    setShowInputAtBottomRef.current && setShowInputAtBottomRef.current(false);
+    setGuestChats([{ id: 'g1', title: 'Cuộc hội thoại mới', messages: [] }]);
+    setGuestCurrentChatId('g1');
+    if (guestNewChatRef.current) guestNewChatRef.current();
+    if (setShowInputAtBottomRef.current) setShowInputAtBottomRef.current(false);
   };
 
   return (
@@ -66,23 +79,28 @@ const MainLayout: React.FC<{ children: React.ReactElement<any> }> = ({ children 
       <Box sx={{ display: 'flex', flex: 1, minHeight: 0 }}>
         <Box sx={{ width: 288, bgcolor: 'white', borderRight: 1, borderColor: 'divider', p: 0, zIndex: 10, minHeight: 0 }}>
           <ChatHistory
-            chats={chats.map(({ id, title }) => ({ id, title }))}
-            currentChatId={currentChatId}
-            onSelect={setCurrentChatId}
+            chats={(loggedIn ? chats : guestChats).map(({ id, title }) => ({ id, title }))}
+            currentChatId={loggedIn ? currentChatId : guestCurrentChatId}
+            onSelect={loggedIn ? setCurrentChatId : setGuestCurrentChatId}
             onNewChat={handleNewChat}
             loggedIn={loggedIn}
           />
         </Box>
         <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-          {React.cloneElement(children, {
-            chats,
-            setChats,
-            currentChatId,
-            setCurrentChatId,
-            loggedIn,
-            setGuestNewChatRef: (fn: () => void) => { guestNewChatRef.current = fn; },
-            setShowInputAtBottomRef: (fn: (v: boolean) => void) => { setShowInputAtBottomRef.current = fn; },
-          })}
+          {React.isValidElement(children) && (children.type as { name?: string }).name === 'ChatPage'
+            ? React.cloneElement(children as React.ReactElement<ChatPageProps>, {
+                chats,
+                setChats,
+                currentChatId,
+                setCurrentChatId,
+                loggedIn,
+                setShowInputAtBottomRef: (fn: (v: boolean) => void) => { setShowInputAtBottomRef.current = fn; },
+                guestChats,
+                setGuestChats,
+                guestCurrentChatId,
+                setGuestCurrentChatId,
+              })
+            : children}
         </Box>
       </Box>
     </Box>

@@ -26,7 +26,8 @@ interface Props {
   loggedIn?: boolean;
 }
 
-const ChatHistory: React.FC<Props> = ({ chats, currentChatId, onSelect, onNewChat, loggedIn }) => {
+const ChatHistory: React.FC<Props> = ({ chats, currentChatId, onSelect, onNewChat }) => {
+  const displayChats = chats && chats.length > 0 ? chats : [{ id: 'g1', title: 'Cuộc hội thoại mới' }];
   return (
     <Box display="flex" flexDirection="column" height="100%" width="100%" pt={3}>
       <Button
@@ -37,38 +38,36 @@ const ChatHistory: React.FC<Props> = ({ chats, currentChatId, onSelect, onNewCha
       >
         New Chat
       </Button>
-      {loggedIn && (
-        <List sx={{ flex: 1, overflowY: 'auto', p: 0, pt: 1 }}>
-          {chats?.map((chat) => {
-            const selected = chat.id === currentChatId;
-            return (
-              <ListItem key={chat.id} disablePadding>
-                <ListItemButton
-                  selected={selected}
-                  onClick={() => onSelect && onSelect(chat.id)}
-                  sx={{
-                    borderRadius: 2,
-                    mb: 1,
-                    color: selected ? 'white' : 'text.primary',
-                    bgcolor: selected ? SELECTED_BG : 'transparent',
-                    opacity: selected ? 1 : undefined,
-                    '&:hover': { bgcolor: selected ? SELECTED_BG_HOVER : 'grey.100', opacity: 1 },
-                    '&.Mui-selected': { backgroundColor: SELECTED_BG, opacity: 1 },
-                    '&.Mui-selected:hover': { backgroundColor: SELECTED_BG_HOVER, opacity: 1 },
-                  }}
-                >
-                  <ListItemIcon sx={{ color: selected ? 'white' : SELECTED_BG, opacity: 1 }}>
-                    <ChatBubbleOutlineIcon />
-                  </ListItemIcon>
-                  <ListItemText
-                    primary={<Typography noWrap sx={{ color: selected ? 'white' : 'text.primary', fontWeight: selected ? 700 : 500, opacity: 1 }}>{chat.title}</Typography>}
-                  />
-                </ListItemButton>
-              </ListItem>
-            );
-          })}
-        </List>
-      )}
+      <List sx={{ flex: 1, overflowY: 'auto', p: 0, pt: 1 }}>
+        {displayChats.map((chat) => {
+          const selected = chat.id === currentChatId;
+          return (
+            <ListItem key={chat.id} disablePadding>
+              <ListItemButton
+                selected={selected}
+                onClick={() => onSelect && onSelect(chat.id)}
+                sx={{
+                  borderRadius: 2,
+                  mb: 1,
+                  color: selected ? 'white' : 'text.primary',
+                  bgcolor: selected ? SELECTED_BG : 'transparent',
+                  opacity: selected ? 1 : undefined,
+                  '&:hover': { bgcolor: selected ? SELECTED_BG_HOVER : 'grey.100', opacity: 1 },
+                  '&.Mui-selected': { backgroundColor: SELECTED_BG, opacity: 1 },
+                  '&.Mui-selected:hover': { backgroundColor: SELECTED_BG_HOVER, opacity: 1 },
+                }}
+              >
+                <ListItemIcon sx={{ color: selected ? 'white' : SELECTED_BG, opacity: 1 }}>
+                  <ChatBubbleOutlineIcon />
+                </ListItemIcon>
+                <ListItemText
+                  primary={<Typography noWrap sx={{ color: selected ? 'white' : 'text.primary', fontWeight: selected ? 700 : 500, opacity: 1 }}>{chat.title}</Typography>}
+                />
+              </ListItemButton>
+            </ListItem>
+          );
+        })}
+      </List>
     </Box>
   );
 };

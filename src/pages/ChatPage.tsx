@@ -9,24 +9,27 @@ interface Message {
   role: 'user' | 'assistant';
   content: string;
 }
-interface Chat {
+export interface Chat {
   id: string;
   title: string;
   messages: Message[];
 }
-interface Props {
+export interface Props {
   chats?: Chat[];
   setChats?: React.Dispatch<React.SetStateAction<Chat[]>>;
   currentChatId?: string;
   setCurrentChatId?: (id: string) => void;
   loggedIn?: boolean;
-  setGuestNewChatRef?: (fn: () => void) => void;
   setShowInputAtBottomRef?: (fn: (v: boolean) => void) => void;
+  // Thêm props cho guest
+  guestChats?: Chat[];
+  setGuestChats?: React.Dispatch<React.SetStateAction<Chat[]>>;
+  guestCurrentChatId?: string;
+  setGuestCurrentChatId?: (id: string) => void;
 }
 
-const ChatPage: React.FC<Props> = ({ chats, setChats, currentChatId, loggedIn, setGuestNewChatRef, setShowInputAtBottomRef }) => {
+const ChatPage: React.FC<Props> = ({ chats, setChats, currentChatId, loggedIn, setShowInputAtBottomRef, guestChats, setGuestChats, guestCurrentChatId }) => {
   const chatRef = useRef<HTMLDivElement>(null);
-  const [guestMessages, setGuestMessages] = useState<Message[]>([]);
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [showInputAtBottom, setShowInputAtBottom] = useState(false);
@@ -36,20 +39,16 @@ const ChatPage: React.FC<Props> = ({ chats, setChats, currentChatId, loggedIn, s
     if (setShowInputAtBottomRef) {
       setShowInputAtBottomRef(setShowInputAtBottom);
     }
-    // eslint-disable-next-line
   }, [setShowInputAtBottomRef]);
 
-  // Đăng ký hàm reset guest chat cho MainLayout
-  useEffect(() => {
-    if (setGuestNewChatRef) {
-      setGuestNewChatRef(() => () => setGuestMessages([]));
-    }
-    // eslint-disable-next-line
-  }, [setGuestNewChatRef]);
-
-  const currentMessages = loggedIn && chats && currentChatId
-    ? chats.find((c) => c.id === currentChatId)?.messages || []
-    : guestMessages;
+  // Lấy messages của chat đang chọn
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  let currentMessages: Message[] = [];
+  if (loggedIn && chats && currentChatId) {
+    currentMessages = chats.find((c) => c.id === currentChatId)?.messages || [];
+  } else if (guestChats && guestCurrentChatId) {
+    currentMessages = guestChats.find((c) => c.id === guestCurrentChatId)?.messages || [];
+  }
 
   useEffect(() => {
     if (chatRef.current) {
@@ -76,12 +75,21 @@ const ChatPage: React.FC<Props> = ({ chats, setChats, currentChatId, loggedIn, s
             : chat
         )
       );
-    } else {
-      setGuestMessages((prev) => [
-        ...prev,
-        { id: Date.now().toString(), role: 'user', content: msg },
-        { id: (Date.now() + 1).toString(), role: 'assistant', content: '__loading__' },
-      ]);
+    } else if (setGuestChats && guestCurrentChatId) {
+      setGuestChats((prev) =>
+        prev.map((chat) =>
+          chat.id === guestCurrentChatId
+            ? {
+                ...chat,
+                messages: [
+                  ...chat.messages,
+                  { id: Date.now().toString(), role: 'user', content: msg },
+                  { id: (Date.now() + 1).toString(), role: 'assistant', content: '__loading__' },
+                ],
+              }
+            : chat
+        )
+      );
     }
     setInput('');
     setLoading(true);
@@ -101,18 +109,33 @@ const ChatPage: React.FC<Props> = ({ chats, setChats, currentChatId, loggedIn, s
               : chat
           )
         );
-      } else {
-        setGuestMessages((prev) =>
-          prev.map((m) =>
-            m.content === '__loading__'
-              ? { ...m, content: 'Đây là phản hồi mẫu.' }
-              : m
+      } else if (setGuestChats && guestCurrentChatId) {
+        setGuestChats((prev) =>
+          prev.map((chat) =>
+            chat.id === guestCurrentChatId
+              ? {
+                  ...chat,
+                  messages: chat.messages.map((m) =>
+                    m.content === '__loading__'
+                      ? { ...m, content: 'Đây là phản hồi mẫu.' }
+                      : m
+                  ),
+                }
+              : chat
           )
         );
       }
       setLoading(false);
     }, 1000);
   };
+
+  // Reset showInputAtBottom khi chuyển sang chat khác mà chưa có tin nhắn
+  React.useEffect(() => {
+    if (currentMessages.length === 0) {
+      setShowInputAtBottom(false);
+    }
+    // eslint-disable-next-line
+  }, [loggedIn ? currentChatId : guestCurrentChatId]);
 
   // Giao diện new chat nếu chưa có tin nhắn
   const isNewChat = currentMessages.length === 0 && !showInputAtBottom;

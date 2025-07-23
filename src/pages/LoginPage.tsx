@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { useToast } from '../components/Toast/ToastProvider';
+import { useToast } from '../components/Toast/toastContext';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
 import TextField from '@mui/material/TextField';
@@ -11,6 +11,7 @@ import Paper from '@mui/material/Paper';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import LockIcon from '@mui/icons-material/Lock';
+import { login } from '../utils/auth';
 
 const LoginPage: React.FC = () => {
   const [username, setUsername] = useState('');
@@ -20,7 +21,7 @@ const LoginPage: React.FC = () => {
 
   const handleSubmit = (e: React.FormEvent) => {
     e.preventDefault();
-    // login logic
+    login(username, password);
     showToast('Đăng nhập thành công!', 'success');
     navigate('/');
   };
