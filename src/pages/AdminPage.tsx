@@ -7,9 +7,9 @@ const AdminPage: React.FC = () => {
   const [selectedTab, setSelectedTab] = useState<'file' | 'user'>('file');
 
   return (
-    <div className="flex flex-row min-h-screen w-full">
+    <div className="flex w-full h-full">
       <AdminSidebar selectedTab={selectedTab} setSelectedTab={setSelectedTab} />
-      <div className="flex-1 p-6">
+      <div className="flex-1 pt-6 pl-6">
         {selectedTab === 'file' && <FileManager />}
         {selectedTab === 'user' && <UserManager />}
       </div>

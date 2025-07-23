@@ -1,9 +1,20 @@
 import React, { useState, useRef, useEffect } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUserCircle, faSignOutAlt, faUserShield, faChevronDown, faSignInAlt, faHome } from '@fortawesome/free-solid-svg-icons';
 import { logout, isAdmin, isLoggedIn } from '../../utils/auth';
 import { useToast } from '../Toast/ToastProvider';
+import Avatar from '@mui/material/Avatar';
+import IconButton from '@mui/material/IconButton';
+import Menu from '@mui/material/Menu';
+import MenuItem from '@mui/material/MenuItem';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Divider from '@mui/material/Divider';
+import Tooltip from '@mui/material/Tooltip';
+import HomeIcon from '@mui/icons-material/Home';
+import LogoutIcon from '@mui/icons-material/Logout';
+import LoginIcon from '@mui/icons-material/Login';
+import AdminPanelSettingsIcon from '@mui/icons-material/AdminPanelSettings';
+import Button from '@mui/material/Button';
 
 interface UserMenuProps {
   onLogout?: () => void;
@@ -11,107 +22,110 @@ interface UserMenuProps {
 }
 
 const UserMenu: React.FC<UserMenuProps> = ({ onLogout, isAdminPage }) => {
-  const [open, setOpen] = useState(false);
-  const menuRef = useRef<HTMLDivElement>(null);
+  const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const open = Boolean(anchorEl);
   const navigate = useNavigate();
   const username = localStorage.getItem('user') || 'User';
   const admin = isAdmin();
   const loggedIn = isLoggedIn();
   const { showToast } = useToast();
 
-  useEffect(() => {
-    const handleClickOutside = (event: MouseEvent) => {
-      if (menuRef.current && !menuRef.current.contains(event.target as Node)) {
-        setOpen(false);
-      }
-    };
-    if (open) document.addEventListener('mousedown', handleClickOutside);
-    return () => document.removeEventListener('mousedown', handleClickOutside);
-  }, [open]);
-
+  const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
+    setAnchorEl(event.currentTarget);
+  };
+  const handleClose = () => {
+    setAnchorEl(null);
+  };
   const handleLogout = () => {
     logout();
     showToast('Đăng xuất thành công!', 'info');
     onLogout && onLogout();
     navigate('/');
+    handleClose();
   };
 
   if (isAdminPage) {
     return (
-      <div className="relative" ref={menuRef}>
-        <button
-          className="flex items-center gap-2 px-3 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-all shadow text-white text-lg font-semibold focus:outline-none"
-          onClick={() => setOpen((v) => !v)}
+      <>
+        <Tooltip title={username} arrow>
+          <IconButton onClick={handleMenu} size="large" sx={{ color: 'white', p: 0 }}>
+            <Avatar sx={{ bgcolor: 'primary.main', width: 40, height: 40 }}>
+              <AdminPanelSettingsIcon />
+            </Avatar>
+          </IconButton>
+        </Tooltip>
+        <Menu
+          anchorEl={anchorEl}
+          open={open}
+          onClose={handleClose}
+          onClick={handleClose}
+          PaperProps={{
+            elevation: 4,
+            sx: { borderRadius: 3, minWidth: 200, mt: 1 },
+          }}
+          anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+          transformOrigin={{ vertical: 'top', horizontal: 'right' }}
         >
-          <FontAwesomeIcon icon={faUserCircle} className="text-3xl" />
-          <span className="hidden md:inline-block font-bold">{username}</span>
-          <FontAwesomeIcon icon={faChevronDown} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
-        </button>
-        {open && (
-          <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl py-2 z-50 animate-fadeIn">
-            <button
-              className="w-full flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-blue-50 text-lg font-medium transition-all"
-              onClick={() => navigate('/')}
-            >
-              <FontAwesomeIcon icon={faHome} className="text-xl text-blue-600" />
-              Go to home page
-            </button>
-            <button
-              className="w-full flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-blue-50 text-lg font-medium transition-all"
-              onClick={handleLogout}
-            >
-              <FontAwesomeIcon icon={faSignOutAlt} className="text-xl text-red-500" />
-              Đăng xuất
-            </button>
-          </div>
-        )}
-      </div>
+          <MenuItem onClick={() => navigate('/') }>
+            <ListItemIcon><HomeIcon color="primary" /></ListItemIcon>
+            <ListItemText>Go to home page</ListItemText>
+          </MenuItem>
+          <Divider />
+          <MenuItem onClick={handleLogout}>
+            <ListItemIcon><LogoutIcon color="error" /></ListItemIcon>
+            <ListItemText>Đăng xuất</ListItemText>
+          </MenuItem>
+        </Menu>
+      </>
     );
   }
 
   if (!loggedIn) {
     return (
-      <button
-        className="flex items-center gap-2 px-4 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-all shadow text-white text-lg font-semibold focus:outline-none"
+      <Button
+        variant="outlined"
+        color="inherit"
+        startIcon={<LoginIcon />}
         onClick={() => navigate('/login')}
+        sx={{ borderRadius: 8, fontWeight: 600, fontSize: 16 }}
       >
-        <FontAwesomeIcon icon={faSignInAlt} className="text-2xl" />
-        <span className="font-bold">Đăng nhập</span>
-      </button>
+        Đăng nhập
+      </Button>
     );
   }
 
   return (
-    <div className="relative" ref={menuRef}>
-      <button
-        className="flex items-center gap-2 px-3 py-2 rounded-full bg-white/10 hover:bg-white/20 transition-all shadow text-white text-lg font-semibold focus:outline-none"
-        onClick={() => setOpen((v) => !v)}
+    <>
+      <Tooltip title={username} arrow>
+        <IconButton onClick={handleMenu} size="large" sx={{ color: 'white', p: 0 }}>
+          <Avatar sx={{ bgcolor: 'primary.main', width: 40, height: 40 }}>
+            {username[0].toUpperCase()}
+          </Avatar>
+        </IconButton>
+      </Tooltip>
+      <Menu
+        anchorEl={anchorEl}
+        open={open}
+        onClose={handleClose}
+        onClick={handleClose}
+        PaperProps={{
+          elevation: 4,
+          sx: { borderRadius: 3, minWidth: 200, mt: 1 },
+        }}
+        anchorOrigin={{ vertical: 'bottom', horizontal: 'right' }}
+        transformOrigin={{ vertical: 'top', horizontal: 'right' }}
       >
-        <FontAwesomeIcon icon={faUserCircle} className="text-3xl" />
-        <span className="hidden md:inline-block font-bold">{username}</span>
-        <FontAwesomeIcon icon={faChevronDown} className={`transition-transform ${open ? 'rotate-180' : ''}`} />
-      </button>
-      {open && (
-        <div className="absolute right-0 mt-2 w-56 bg-white rounded-2xl shadow-2xl py-2 z-50 animate-fadeIn">
-          {admin && (
-            <button
-              className="w-full flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-blue-50 text-lg font-medium transition-all"
-              onClick={() => navigate('/admin')}
-            >
-              <FontAwesomeIcon icon={faUserShield} className="text-xl text-blue-600" />
-              Go to admin page
-            </button>
-          )}
-          <button
-            className="w-full flex items-center gap-3 px-5 py-3 text-gray-700 hover:bg-blue-50 text-lg font-medium transition-all"
-            onClick={handleLogout}
-          >
-            <FontAwesomeIcon icon={faSignOutAlt} className="text-xl text-red-500" />
-            Đăng xuất
-          </button>
-        </div>
-      )}
-    </div>
+        <MenuItem onClick={() => navigate('/admin') }>
+          <ListItemIcon><AdminPanelSettingsIcon color="primary" /></ListItemIcon>
+          <ListItemText>Admin</ListItemText>
+        </MenuItem>
+        <Divider />
+        <MenuItem onClick={handleLogout}>
+          <ListItemIcon><LogoutIcon color="error" /></ListItemIcon>
+          <ListItemText>Đăng xuất</ListItemText>
+        </MenuItem>
+      </Menu>
+    </>
   );
 };
 

@@ -1,6 +1,17 @@
 import React from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faCommentDots, faPlus } from '@fortawesome/free-solid-svg-icons';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import AddIcon from '@mui/icons-material/Add';
+import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
+
+const SELECTED_BG = '#1565c0'; // blue[800]
+const SELECTED_BG_HOVER = '#0d47a1'; // blue[900]
 
 interface Chat {
   id: string;
@@ -17,31 +28,48 @@ interface Props {
 
 const ChatHistory: React.FC<Props> = ({ chats, currentChatId, onSelect, onNewChat, loggedIn }) => {
   return (
-    <div className="flex flex-col h-full w-full">
-      <button
-        className="flex items-center gap-2 px-4 py-2 mb-2 rounded hover:bg-blue-100 text-blue-700 font-semibold text-base transition-all"
+    <Box display="flex" flexDirection="column" height="100%" width="100%" pt={3}>
+      <Button
+        variant="outlined"
+        startIcon={<AddIcon />}
         onClick={onNewChat}
+        sx={{ mb: 2, fontWeight: 600, color: 'primary.main', borderRadius: 2, borderColor: 'primary.light', py: 1.5 }}
       >
-        <FontAwesomeIcon icon={faPlus} />
         New Chat
-      </button>
+      </Button>
       {loggedIn && (
-        <ul className="flex-1 overflow-y-auto select-none">
-          {chats?.map((chat) => (
-            <li key={chat.id}>
-              <button
-                className={`w-full flex items-center gap-2 px-4 py-2 rounded-lg text-base font-medium transition-all duration-200 text-left
-                  ${chat.id === currentChatId ? 'bg-blue-600 text-white' : 'hover:bg-gray-100 text-gray-800'}`}
-                onClick={() => onSelect && onSelect(chat.id)}
-              >
-                <FontAwesomeIcon icon={faCommentDots} className="text-lg" />
-                <span className="truncate">{chat.title}</span>
-              </button>
-            </li>
-          ))}
-        </ul>
+        <List sx={{ flex: 1, overflowY: 'auto', p: 0, pt: 1 }}>
+          {chats?.map((chat) => {
+            const selected = chat.id === currentChatId;
+            return (
+              <ListItem key={chat.id} disablePadding>
+                <ListItemButton
+                  selected={selected}
+                  onClick={() => onSelect && onSelect(chat.id)}
+                  sx={{
+                    borderRadius: 2,
+                    mb: 1,
+                    color: selected ? 'white' : 'text.primary',
+                    bgcolor: selected ? SELECTED_BG : 'transparent',
+                    opacity: selected ? 1 : undefined,
+                    '&:hover': { bgcolor: selected ? SELECTED_BG_HOVER : 'grey.100', opacity: 1 },
+                    '&.Mui-selected': { backgroundColor: SELECTED_BG, opacity: 1 },
+                    '&.Mui-selected:hover': { backgroundColor: SELECTED_BG_HOVER, opacity: 1 },
+                  }}
+                >
+                  <ListItemIcon sx={{ color: selected ? 'white' : SELECTED_BG, opacity: 1 }}>
+                    <ChatBubbleOutlineIcon />
+                  </ListItemIcon>
+                  <ListItemText
+                    primary={<Typography noWrap sx={{ color: selected ? 'white' : 'text.primary', fontWeight: selected ? 700 : 500, opacity: 1 }}>{chat.title}</Typography>}
+                  />
+                </ListItemButton>
+              </ListItem>
+            );
+          })}
+        </List>
       )}
-    </div>
+    </Box>
   );
 };
 

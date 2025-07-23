@@ -1,39 +1,43 @@
 import React, { useRef } from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUpload } from '@fortawesome/free-solid-svg-icons';
+import Button from '@mui/material/Button';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import UploadFileIcon from '@mui/icons-material/UploadFile';
 
-type Props = {
+interface Props {
   onUpload: (file: File) => void;
-};
+}
 
 const FileUpload: React.FC<Props> = ({ onUpload }) => {
-  const inputRef = useRef<HTMLInputElement>(null);
+  const fileInputRef = useRef<HTMLInputElement>(null);
 
-  const handleChange = (e: React.ChangeEvent<HTMLInputElement>) => {
-    const file = e.target.files?.[0];
-    if (file) {
-      onUpload(file);
-      if (inputRef.current) inputRef.current.value = '';
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    if (e.target.files && e.target.files[0]) {
+      onUpload(e.target.files[0]);
+      e.target.value = '';
     }
   };
 
   return (
-    <div>
+    <Box display="flex" alignItems="center" gap={2}>
+      <Typography variant="body1" fontWeight={500}>
+        Choose File
+      </Typography>
       <input
-        ref={inputRef}
         type="file"
-        className="block mb-2"
-        onChange={handleChange}
+        ref={fileInputRef}
+        style={{ display: 'none' }}
+        onChange={handleFileChange}
       />
-      <button
-        className="px-4 py-2 bg-blue-600 text-white rounded hover:bg-blue-700 flex items-center gap-2"
-        onClick={() => inputRef.current?.click()}
-        type="button"
+      <Button
+        variant="contained"
+        startIcon={<UploadFileIcon />}
+        onClick={() => fileInputRef.current?.click()}
+        sx={{ fontWeight: 600 }}
       >
-        <FontAwesomeIcon icon={faUpload} />
         Chọn file
-      </button>
-    </div>
+      </Button>
+    </Box>
   );
 };
 

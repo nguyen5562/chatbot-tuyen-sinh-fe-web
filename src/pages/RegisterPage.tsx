@@ -1,13 +1,23 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { register } from '../utils/auth';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faLock, faUserPlus } from '@fortawesome/free-solid-svg-icons';
 import { useToast } from '../components/Toast/ToastProvider';
+import Avatar from '@mui/material/Avatar';
+import Button from '@mui/material/Button';
+import TextField from '@mui/material/TextField';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Container from '@mui/material/Container';
+import Paper from '@mui/material/Paper';
+import PersonAddAlt1Icon from '@mui/icons-material/PersonAddAlt1';
+import PersonIcon from '@mui/icons-material/Person';
+import AccountCircleIcon from '@mui/icons-material/AccountCircle';
+import LockIcon from '@mui/icons-material/Lock';
 
 const RegisterPage: React.FC = () => {
   const [username, setUsername] = useState('');
   const [password, setPassword] = useState('');
+  const [fullname, setFullname] = useState('');
   const navigate = useNavigate();
   const { showToast } = useToast();
 
@@ -19,51 +29,74 @@ const RegisterPage: React.FC = () => {
   };
 
   return (
-    <div className="flex flex-col items-center justify-center min-h-[80vh] w-full">
-      <div className="max-w-md w-full mx-auto mt-16 p-10 bg-white/90 rounded-3xl shadow-2xl">
-        <h2 className="text-3xl font-extrabold mb-6 text-green-700 flex items-center gap-3 justify-center">
-          <FontAwesomeIcon icon={faUserPlus} className="text-2xl" />
-          Đăng ký
-        </h2>
-        <form onSubmit={handleSubmit} className="space-y-6">
-          <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-green-400 text-xl">
-              <FontAwesomeIcon icon={faUser} />
-            </span>
-            <input
-              className="w-full border-none rounded-full px-6 py-3 shadow text-lg outline-none pl-12 focus:ring-4 focus:ring-green-200 transition-all"
-              type="text"
-              placeholder="Tên đăng nhập"
+    <Container component="main" maxWidth="xs" sx={{ minHeight: '100vh', display: 'flex', alignItems: 'center', justifyContent: 'center' }}>
+      <Paper elevation={6} sx={{ p: 4, borderRadius: 3, width: '100%' }}>
+        <Box sx={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <Avatar sx={{ m: 1, bgcolor: 'primary.main' }}>
+            <PersonAddAlt1Icon />
+          </Avatar>
+          <Typography component="h1" variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
+            Đăng ký
+          </Typography>
+          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }}>
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              id="fullname"
+              label="Họ tên"
+              name="fullname"
+              autoComplete="name"
+              value={fullname}
+              onChange={e => setFullname(e.target.value)}
+              InputProps={{ startAdornment: <PersonIcon sx={{ mr: 1, color: 'primary.main' }} /> }}
+            />
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              id="username"
+              label="Tài khoản"
+              name="username"
+              autoComplete="username"
               value={username}
               onChange={e => setUsername(e.target.value)}
+              InputProps={{ startAdornment: <AccountCircleIcon sx={{ mr: 1, color: 'primary.main' }} /> }}
             />
-          </div>
-          <div className="relative">
-            <span className="absolute left-4 top-1/2 -translate-y-1/2 text-green-400 text-xl">
-              <FontAwesomeIcon icon={faLock} />
-            </span>
-            <input
-              className="w-full border-none rounded-full px-6 py-3 shadow text-lg outline-none pl-12 focus:ring-4 focus:ring-green-200 transition-all"
+            <TextField
+              margin="normal"
+              required
+              fullWidth
+              name="password"
+              label="Mật khẩu"
               type="password"
-              placeholder="Mật khẩu"
+              id="password"
+              autoComplete="current-password"
               value={password}
               onChange={e => setPassword(e.target.value)}
+              InputProps={{ startAdornment: <LockIcon sx={{ mr: 1, color: 'primary.main' }} /> }}
             />
-          </div>
-          <button
-            type="submit"
-            className="w-full bg-green-600 text-white py-3 rounded-full text-lg font-bold shadow-lg hover:bg-green-700 transition-all flex items-center justify-center gap-2"
-          >
-            <FontAwesomeIcon icon={faUserPlus} />
-            Đăng ký
-          </button>
-        </form>
-        <div className="mt-6 text-center">
-          <span>Đã có tài khoản? </span>
-          <Link to="/login" className="text-blue-600 hover:underline font-semibold">Đăng nhập</Link>
-        </div>
-      </div>
-    </div>
+            <Button
+              type="submit"
+              fullWidth
+              variant="contained"
+              color="primary"
+              sx={{ mt: 3, mb: 2, fontWeight: 700, fontSize: 16 }}
+            >
+              Đăng ký
+            </Button>
+            <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mt: 1 }}>
+              <Typography variant="body2" sx={{ mr: 1 }}>
+                Đã có tài khoản?
+              </Typography>
+              <Link to="/login" style={{ color: '#1976d2', fontWeight: 600, textDecoration: 'none' }}>
+                Đăng nhập
+              </Link>
+            </Box>
+          </Box>
+        </Box>
+      </Paper>
+    </Container>
   );
 };
 

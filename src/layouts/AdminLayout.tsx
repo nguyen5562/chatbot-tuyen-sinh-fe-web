@@ -1,19 +1,26 @@
 import React from 'react';
 import UserMenu from '../components/Auth/UserMenu';
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import Box from '@mui/material/Box';
+
+const ADMIN_HEADER_BG = 'linear-gradient(90deg, #283593 0%, #1976d2 100%)'; // xanh tím đậm ngang
 
 const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   return (
-    <div className="min-h-screen h-screen flex flex-col bg-gradient-to-br from-gray-100 to-blue-100">
-      <header className="h-16 bg-gradient-to-r from-blue-900 to-blue-700 text-white flex items-center justify-between px-8 shadow-lg gap-4">
-        <div className="flex items-center gap-3">
-          <span className="text-2xl font-extrabold tracking-wide drop-shadow">Admin Panel</span>
-        </div>
-        <UserMenu isAdminPage />
-      </header>
-      <div className="flex flex-1 flex-row min-h-0 h-0">
+    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', bgcolor: 'background.default' }}>
+      <AppBar position="static" sx={{ background: ADMIN_HEADER_BG }} elevation={4}>
+        <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <span style={{ fontSize: 28, fontWeight: 800, letterSpacing: 1, textShadow: '0 2px 8px #0002' }}>Admin Panel</span>
+          </Box>
+          <UserMenu isAdminPage />
+        </Toolbar>
+      </AppBar>
+      <Box sx={{ display: 'flex', flex: 1, minHeight: 0 }}>
         {children}
-      </div>
-    </div>
+      </Box>
+    </Box>
   );
 };
 

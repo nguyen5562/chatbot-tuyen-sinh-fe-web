@@ -1,6 +1,10 @@
 import React from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faUser, faRobot } from '@fortawesome/free-solid-svg-icons';
+import Box from '@mui/material/Box';
+import Avatar from '@mui/material/Avatar';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+import PersonIcon from '@mui/icons-material/Person';
+import SmartToyIcon from '@mui/icons-material/SmartToy';
 
 type Message = {
   id: string;
@@ -15,21 +19,37 @@ type Props = {
 const ChatMessage: React.FC<Props> = ({ message }) => {
   const isUser = message.role === 'user';
   return (
-    <div className={`flex ${isUser ? 'justify-end' : 'justify-start'} items-end animate-fadeIn`}>
+    <Box display="flex" justifyContent={isUser ? 'flex-end' : 'flex-start'} alignItems="flex-end" className="animate-fadeIn" mb={2}>
       {!isUser && (
-        <span className="mr-3 text-gray-500 text-2xl">
-          <FontAwesomeIcon icon={faRobot} />
-        </span>
+        <Avatar sx={{ bgcolor: 'grey.200', color: 'primary.main', mr: 2, width: 40, height: 40 }}>
+          <SmartToyIcon fontSize="large" />
+        </Avatar>
       )}
-      <div className={`max-w-lg px-6 py-4 rounded-3xl shadow-xl text-lg font-medium transition-all duration-300 ${isUser ? 'bg-blue-500 text-white rounded-br-md' : 'bg-white text-gray-900 rounded-bl-md border border-blue-100'}`}>
-        {message.content}
-      </div>
+      <Paper
+        elevation={isUser ? 6 : 2}
+        sx={{
+          maxWidth: 480,
+          px: 3,
+          py: 2,
+          borderRadius: 6,
+          fontSize: 18,
+          fontWeight: 500,
+          bgcolor: isUser ? 'primary.main' : 'background.paper',
+          color: isUser ? 'white' : 'text.primary',
+          borderBottomRightRadius: isUser ? 12 : 24,
+          borderBottomLeftRadius: !isUser ? 12 : 24,
+          border: !isUser ? '1px solid #90caf9' : undefined,
+          boxShadow: isUser ? 6 : 2,
+        }}
+      >
+        <Typography variant="body1" sx={{ whiteSpace: 'pre-line' }}>{message.content}</Typography>
+      </Paper>
       {isUser && (
-        <span className="ml-3 text-blue-500 text-2xl">
-          <FontAwesomeIcon icon={faUser} />
-        </span>
+        <Avatar sx={{ bgcolor: 'primary.light', color: 'white', ml: 2, width: 40, height: 40 }}>
+          <PersonIcon fontSize="large" />
+        </Avatar>
       )}
-    </div>
+    </Box>
   );
 };
 

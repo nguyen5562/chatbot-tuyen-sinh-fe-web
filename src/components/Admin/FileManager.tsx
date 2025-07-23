@@ -1,10 +1,17 @@
 import React, { useState } from 'react';
 import FileUpload from './FileUpload';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFileUpload } from '@fortawesome/free-solid-svg-icons';
 import { useToast } from '../Toast/ToastProvider';
+import Box from '@mui/material/Box';
+import Typography from '@mui/material/Typography';
+import Paper from '@mui/material/Paper';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemText from '@mui/material/ListItemText';
+import Divider from '@mui/material/Divider';
+import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 
-type FileItem = {
+// Định nghĩa kiểu file
+ type FileItem = {
   name: string;
   size: number;
 };
@@ -19,24 +26,37 @@ const FileManager: React.FC = () => {
   };
 
   return (
-    <div className="w-full">
-      <h2 className="text-3xl font-extrabold mb-6 text-blue-700 flex items-center gap-3 justify-center">
-        <FontAwesomeIcon icon={faFileUpload} className="text-2xl" />
+    <Box sx={{ width: '100%', maxWidth: '1200px', mx: 'auto', mt: 2 }}>
+      <Typography variant="h4" fontWeight={800} color="primary" mb={4} display="flex" alignItems="center" justifyContent="center" gap={2}>
+        <CloudUploadIcon fontSize="large" />
         Quản lý file
-      </h2>
-      <FileUpload onUpload={handleUpload} />
-      <div className="mt-8">
-        <h3 className="font-semibold mb-2 text-lg text-blue-700">Danh sách file đã upload</h3>
-        <ul className="space-y-2">
+      </Typography>
+      <Paper sx={{ p: 3, borderRadius: 3, mb: 4 }}>
+        <FileUpload onUpload={handleUpload} />
+      </Paper>
+      <Typography variant="h6" fontWeight={700} color="primary" mb={2}>
+        Danh sách file đã upload
+      </Typography>
+      <Paper sx={{ borderRadius: 3, boxShadow: 2 }}>
+        <List>
+          {files.length === 0 && (
+            <ListItem>
+              <ListItemText primary={<Typography color="text.secondary">Chưa có file nào được upload.</Typography>} />
+            </ListItem>
+          )}
           {files.map((f, i) => (
-            <li key={i} className="border rounded-xl px-4 py-3 flex justify-between items-center bg-gray-50 shadow">
-              <span className="font-medium">{f.name}</span>
-              <span className="text-xs text-gray-500">{(f.size / 1024).toFixed(2)} KB</span>
-            </li>
+            <React.Fragment key={i}>
+              <ListItem secondaryAction={
+                <Typography variant="body2" color="text.secondary">{(f.size / 1024).toFixed(2)} KB</Typography>
+              }>
+                <ListItemText primary={f.name} />
+              </ListItem>
+              {i < files.length - 1 && <Divider component="li" />}
+            </React.Fragment>
           ))}
-        </ul>
-      </div>
-    </div>
+        </List>
+      </Paper>
+    </Box>
   );
 };
 

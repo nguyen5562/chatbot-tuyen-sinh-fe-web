@@ -117,8 +117,12 @@ const ChatPage: React.FC<Props> = ({ chats, setChats, currentChatId, loggedIn, s
   // Giao diện new chat nếu chưa có tin nhắn
   const isNewChat = currentMessages.length === 0 && !showInputAtBottom;
 
+  const chatBg = 'linear-gradient(135deg, #e3f0ff 0%, #b3d1fa 100%)';
+
   return (
-    <div className="flex flex-col h-full min-h-0 w-full relative">
+    <div className="flex flex-col h-full min-h-0 w-full relative overflow-hidden">
+      {/* Nền gradient cố định */}
+      <div style={{ position: 'absolute', inset: 0, zIndex: 0, background: chatBg }} />
       {/* New chat UI ở giữa màn hình */}
       <div
         className={`absolute left-0 right-0 top-0 bottom-0 flex flex-col items-center justify-center transition-all duration-700 z-10
@@ -152,7 +156,9 @@ const ChatPage: React.FC<Props> = ({ chats, setChats, currentChatId, loggedIn, s
         </div>
       </div>
       {/* Chat UI bình thường */}
-      <div className={`flex flex-col h-full min-h-0 w-full transition-all duration-700 ${isNewChat ? 'opacity-0 pointer-events-none translate-y-[-32px]' : 'opacity-100 pointer-events-auto'}`}>
+      <div
+        className={`flex flex-col h-full min-h-0 w-full transition-all duration-700 z-10 ${isNewChat ? 'opacity-0 pointer-events-none translate-y-[-32px]' : 'opacity-100 pointer-events-auto'}`}
+      >
         <div ref={chatRef} className="flex-1 overflow-y-auto px-4 py-8 space-y-6 scrollbar-thin scrollbar-thumb-blue-200 scrollbar-track-transparent bg-transparent">
           {currentMessages.map((msg, idx) =>
             msg.content === '__loading__' ? (

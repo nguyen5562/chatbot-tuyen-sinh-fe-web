@@ -1,6 +1,14 @@
 import React from 'react';
-import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
-import { faFileAlt, faUsers } from '@fortawesome/free-solid-svg-icons';
+import Drawer from '@mui/material/Drawer';
+import List from '@mui/material/List';
+import ListItem from '@mui/material/ListItem';
+import ListItemButton from '@mui/material/ListItemButton';
+import ListItemIcon from '@mui/material/ListItemIcon';
+import ListItemText from '@mui/material/ListItemText';
+import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
+import GroupIcon from '@mui/icons-material/Group';
+
+const drawerWidth = 260;
 
 type Props = {
   selectedTab: 'file' | 'user';
@@ -9,31 +17,49 @@ type Props = {
 
 const AdminSidebar: React.FC<Props> = ({ selectedTab, setSelectedTab }) => {
   return (
-    <aside className="w-72 bg-gradient-to-b from-gray-900 to-blue-900 text-white flex flex-col p-6 h-full shadow-2xl">
-      <nav className="flex-1">
-        <ul className="space-y-3">
-          <li>
-            <button
-              className={`flex items-center gap-3 py-3 px-4 rounded-xl transition-all text-lg font-medium w-full text-left ${selectedTab === 'file' ? 'bg-blue-600 text-white' : 'hover:bg-blue-700/70 text-white/80'}`}
-              onClick={() => setSelectedTab('file')}
-            >
-              <FontAwesomeIcon icon={faFileAlt} className="text-xl" />
-              Quản lý file
-            </button>
-          </li>
-          <li>
-            <button
-              className={`flex items-center gap-3 py-3 px-4 rounded-xl transition-all text-lg font-medium w-full text-left ${selectedTab === 'user' ? 'bg-blue-600 text-white' : 'hover:bg-blue-700/70 text-white/80'}`}
-              onClick={() => setSelectedTab('user')}
-            >
-              <FontAwesomeIcon icon={faUsers} className="text-xl" />
-              Quản lý người dùng
-            </button>
-          </li>
-        </ul>
-      </nav>
-      <div className="mb-6" />
-    </aside>
+    <Drawer
+      variant="permanent"
+      sx={{
+        width: drawerWidth,
+        flexShrink: 0,
+        [`& .MuiDrawer-paper`]: {
+          width: drawerWidth,
+          boxSizing: 'border-box',
+          background: 'linear-gradient(to bottom, #1a237e, #1976d2)',
+          color: 'white',
+          borderRight: 0,
+          top: 64,
+          height: 'calc(100% - 64px)',
+        },
+      }}
+    >
+      <List sx={{ mt: 4 }}>
+        <ListItem disablePadding>
+          <ListItemButton
+            selected={selectedTab === 'file'}
+            onClick={() => setSelectedTab('file')}
+            sx={{ borderRadius: 2, mb: 1 }}
+          >
+            <ListItemIcon sx={{ color: 'inherit' }}>
+              <InsertDriveFileIcon />
+            </ListItemIcon>
+            <ListItemText primary="Quản lý file" />
+          </ListItemButton>
+        </ListItem>
+        <ListItem disablePadding>
+          <ListItemButton
+            selected={selectedTab === 'user'}
+            onClick={() => setSelectedTab('user')}
+            sx={{ borderRadius: 2 }}
+          >
+            <ListItemIcon sx={{ color: 'inherit' }}>
+              <GroupIcon />
+            </ListItemIcon>
+            <ListItemText primary="Quản lý người dùng" />
+          </ListItemButton>
+        </ListItem>
+      </List>
+    </Drawer>
   );
 };
 

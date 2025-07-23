@@ -2,8 +2,11 @@ import React, { useState, useRef } from 'react';
 import UserMenu from '../components/Auth/UserMenu';
 import ChatHistory from '../components/Chat/ChatHistory';
 import { isLoggedIn } from '../utils/auth';
+import AppBar from '@mui/material/AppBar';
+import Toolbar from '@mui/material/Toolbar';
+import Box from '@mui/material/Box';
 
-const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
+const MainLayout: React.FC<{ children: React.ReactElement<any> }> = ({ children }) => {
   const [chats, setChats] = useState([
     {
       id: '1',
@@ -51,15 +54,17 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
   };
 
   return (
-    <div className="min-h-screen h-screen flex flex-col bg-gradient-to-br from-gray-100 to-blue-100">
-      <header className="h-16 bg-gradient-to-r from-blue-700 to-blue-500 text-white flex items-center justify-between px-8 shadow-lg gap-4">
-        <div className="flex items-center gap-3">
-          <span className="text-2xl font-extrabold tracking-wide drop-shadow">ChatGPT Clone</span>
-        </div>
-        <UserMenu onLogout={handleLogout} />
-      </header>
-      <div className="flex flex-1 min-h-0 h-0">
-        <aside className="w-72 h-full flex flex-col bg-white/90 border-r border-blue-100 p-2 pt-4 z-10 min-h-0">
+    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', bgcolor: 'background.default' }}>
+      <AppBar position="static" sx={{ background: 'linear-gradient(to right, #1976d2, #42a5f5)' }} elevation={4}>
+        <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
+            <span style={{ fontSize: 28, fontWeight: 800, letterSpacing: 1, textShadow: '0 2px 8px #0002' }}>ChatGPT Clone</span>
+          </Box>
+          <UserMenu onLogout={handleLogout} />
+        </Toolbar>
+      </AppBar>
+      <Box sx={{ display: 'flex', flex: 1, minHeight: 0 }}>
+        <Box sx={{ width: 288, bgcolor: 'white', borderRight: 1, borderColor: 'divider', p: 0, zIndex: 10, minHeight: 0 }}>
           <ChatHistory
             chats={chats.map(({ id, title }) => ({ id, title }))}
             currentChatId={currentChatId}
@@ -67,9 +72,9 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             onNewChat={handleNewChat}
             loggedIn={loggedIn}
           />
-        </aside>
-        <main className="flex-1 flex flex-col h-full min-h-0">{
-          React.cloneElement(children as React.ReactElement, {
+        </Box>
+        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+          {React.cloneElement(children, {
             chats,
             setChats,
             currentChatId,
@@ -77,10 +82,10 @@ const MainLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
             loggedIn,
             setGuestNewChatRef: (fn: () => void) => { guestNewChatRef.current = fn; },
             setShowInputAtBottomRef: (fn: (v: boolean) => void) => { setShowInputAtBottomRef.current = fn; },
-          })
-        }</main>
-      </div>
-    </div>
+          })}
+        </Box>
+      </Box>
+    </Box>
   );
 };
 
