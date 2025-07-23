@@ -9,25 +9,31 @@ type Props = {
 
 const AdminSidebar: React.FC<Props> = ({ selectedTab, setSelectedTab }) => {
   return (
-    <div className="w-60 h-screen bg-white flex flex-col justify-between">
-      <div className="flex flex-col gap-2 pt-4">
-        <button
-          className={`flex items-center gap-3 text-lg font-semibold px-4 py-3 text-left transition-all ${selectedTab === 'file' ? 'bg-blue-600 text-white' : 'hover:bg-blue-50 text-blue-700'}`}
-          onClick={() => setSelectedTab('file')}
-        >
-          <FontAwesomeIcon icon={faFileAlt} />
-          Quản lý file
-        </button>
-        <button
-          className={`flex items-center gap-3 text-lg font-semibold px-4 py-3 text-left transition-all ${selectedTab === 'user' ? 'bg-blue-600 text-white' : 'hover:bg-blue-50 text-blue-700'}`}
-          onClick={() => setSelectedTab('user')}
-        >
-          <FontAwesomeIcon icon={faUsers} />
-          Quản lý người dùng
-        </button>
-      </div>
+    <aside className="w-72 bg-gradient-to-b from-gray-900 to-blue-900 text-white flex flex-col p-6 h-full shadow-2xl">
+      <nav className="flex-1">
+        <ul className="space-y-3">
+          <li>
+            <button
+              className={`flex items-center gap-3 py-3 px-4 rounded-xl transition-all text-lg font-medium w-full text-left ${selectedTab === 'file' ? 'bg-blue-600 text-white' : 'hover:bg-blue-700/70 text-white/80'}`}
+              onClick={() => setSelectedTab('file')}
+            >
+              <FontAwesomeIcon icon={faFileAlt} className="text-xl" />
+              Quản lý file
+            </button>
+          </li>
+          <li>
+            <button
+              className={`flex items-center gap-3 py-3 px-4 rounded-xl transition-all text-lg font-medium w-full text-left ${selectedTab === 'user' ? 'bg-blue-600 text-white' : 'hover:bg-blue-700/70 text-white/80'}`}
+              onClick={() => setSelectedTab('user')}
+            >
+              <FontAwesomeIcon icon={faUsers} className="text-xl" />
+              Quản lý người dùng
+            </button>
+          </li>
+        </ul>
+      </nav>
       <div className="mb-6" />
-    </div>
+    </aside>
   );
 };
 

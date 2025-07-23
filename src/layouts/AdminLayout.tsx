@@ -10,10 +10,8 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
         </div>
         <UserMenu isAdminPage />
       </header>
-      <div className="flex flex-1 min-h-0 h-0">
-        <main className="flex-1 p-0 md:p-6 w-full">
-          {children}
-        </main>
+      <div className="flex flex-1 flex-row min-h-0 h-0">
+        {children}
       </div>
     </div>
   );
