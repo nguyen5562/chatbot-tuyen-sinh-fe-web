@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { logout, isLoggedIn } from "../../utils/auth";
+import { useAuth } from "./AuthContext";
 import { useToast } from '../Toast/toastContext';
 import Avatar from "@mui/material/Avatar";
 import IconButton from "@mui/material/IconButton";
@@ -26,7 +26,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ onLogout, isAdminPage }) => {
   const open = Boolean(anchorEl);
   const navigate = useNavigate();
   const username = localStorage.getItem("user") || "User";
-  const loggedIn = isLoggedIn();
+  const { loggedIn, logout } = useAuth();
   const { showToast } = useToast();
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {

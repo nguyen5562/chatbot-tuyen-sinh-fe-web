@@ -12,7 +12,7 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import LockIcon from '@mui/icons-material/Lock';
 import { authApi } from '../utils/apis/authApi';
-import { login } from '../utils/auth';
+import { useAuth } from '../components/Auth/AuthContext';
 
 const LoginPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -22,6 +22,7 @@ const LoginPage: React.FC = () => {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
+  const { login } = useAuth();
   const { showToast } = useToast();
 
   const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
