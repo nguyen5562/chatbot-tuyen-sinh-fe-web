@@ -11,19 +11,67 @@ import Paper from '@mui/material/Paper';
 import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import LockIcon from '@mui/icons-material/Lock';
+import { authApi } from '../utils/apis/authApi';
 import { login } from '../utils/auth';
 
 const LoginPage: React.FC = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
+  const [formData, setFormData] = useState({
+    username: '',
+    password: ''
+  });
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { showToast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setFormData(prev => ({ ...prev, [field]: value }));
+
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors: { [key: string]: string } = {};
+
+    if (!formData.username.trim()) newErrors.username = 'Tài khoản là bắt buộc';
+    if (!formData.password.trim()) newErrors.password = 'Mật khẩu là bắt buộc';
+
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    login(username, password);
-    showToast('Đăng nhập thành công!', 'success');
-    navigate('/');
+
+    if (!validateForm()) return;
+
+    setIsLoading(true);
+
+    try {
+      const response = await authApi.login(formData);
+
+      if (response.status === 'Success') {
+        showToast(response.message, 'success');
+        login(formData.username, formData.password);
+        navigate('/');
+      } else {
+        showToast(response.message || 'Đăng nhập thất bại. Vui lòng thử lại!', 'error');
+      }
+    } catch (error: any) {
+      console.error('Login error:', error);
+
+      if (error?.statusCode) {
+        showToast(error.message || 'Đăng nhập thất bại. Vui lòng thử lại!', 'error');
+      } else {
+        showToast('Kết nối thất bại. Vui lòng thử lại!', 'error');
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -36,31 +84,31 @@ const LoginPage: React.FC = () => {
           <Typography component="h1" variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
             Đăng nhập
           </Typography>
-          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }}>
+          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1, width: '100%' }}>
             <TextField
               margin="normal"
-              required
               fullWidth
-              id="username"
               label="Tài khoản"
-              name="username"
-              autoComplete="username"
-              value={username}
-              onChange={e => setUsername(e.target.value)}
-              InputProps={{ startAdornment: <AccountCircleIcon sx={{ mr: 1, color: 'primary.main' }} /> }}
+              value={formData.username}
+              onChange={handleChange('username')}
+              error={!!errors.username}
+              helperText={errors.username}
+              InputProps={{
+                startAdornment: <AccountCircleIcon sx={{ mr: 1, color: errors.username ? 'error.main' : 'primary.main' }} />
+              }}
             />
             <TextField
               margin="normal"
-              required
               fullWidth
-              name="password"
               label="Mật khẩu"
               type="password"
-              id="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              InputProps={{ startAdornment: <LockIcon sx={{ mr: 1, color: 'primary.main' }} /> }}
+              value={formData.password}
+              onChange={handleChange('password')}
+              error={!!errors.password}
+              helperText={errors.password}
+              InputProps={{
+                startAdornment: <LockIcon sx={{ mr: 1, color: errors.password ? 'error.main' : 'primary.main' }} />
+              }}
             />
             <Button
               type="submit"
@@ -69,7 +117,7 @@ const LoginPage: React.FC = () => {
               color="primary"
               sx={{ mt: 3, mb: 2, fontWeight: 700, fontSize: 16 }}
             >
-              Đăng nhập
+              {isLoading ? 'Đang đăng nhập...' : 'Đăng nhập'}
             </Button>
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mt: 1 }}>
               <Typography variant="body2" sx={{ mr: 1 }}>

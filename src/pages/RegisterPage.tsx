@@ -1,6 +1,6 @@
 import React, { useState } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
-import { register } from '../utils/auth';
+import { authApi } from '../utils/apis/authApi';
 import { useToast } from '../components/Toast/toastContext';
 import Avatar from '@mui/material/Avatar';
 import Button from '@mui/material/Button';
@@ -15,17 +15,64 @@ import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import LockIcon from '@mui/icons-material/Lock';
 
 const RegisterPage: React.FC = () => {
-  const [username, setUsername] = useState('');
-  const [password, setPassword] = useState('');
-  const [fullname, setFullname] = useState('');
+  const [formData, setFormData] = useState({
+    fullname: '',
+    username: '',
+    password: ''
+  });
+  const [errors, setErrors] = useState<{ [key: string]: string }>({});
+  const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
   const { showToast } = useToast();
 
-  const handleSubmit = (e: React.FormEvent) => {
+  const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
+    const value = e.target.value;
+    setFormData(prev => ({ ...prev, [field]: value }));
+    
+    // Clear error when user starts typing
+    if (errors[field]) {
+      setErrors(prev => ({ ...prev, [field]: '' }));
+    }
+  };
+
+  const validateForm = () => {
+    const newErrors: { [key: string]: string } = {};
+    
+    if (!formData.fullname.trim()) newErrors.fullname = 'Họ tên là bắt buộc';
+    if (!formData.username.trim()) newErrors.username = 'Tài khoản là bắt buộc';
+    if (!formData.password.trim()) newErrors.password = 'Mật khẩu là bắt buộc';
+    
+    setErrors(newErrors);
+    return Object.keys(newErrors).length === 0;
+  };
+
+  const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
-    register(username, password);
-    showToast('Đăng ký thành công!', 'success');
-    navigate('/login');
+    
+    if (!validateForm()) return;
+    
+    setIsLoading(true);
+    
+    try {
+      const response = await authApi.register(formData);
+      
+      if (response.status === 'Success') {
+        showToast(response.message, 'success');
+        navigate('/login');
+      } else {
+        showToast(response.message || 'Đăng ký thất bại. Vui lòng thử lại!', 'error');
+      }
+    } catch (error: any) {
+      console.error('Registration error:', error);
+      
+      if (error?.statusCode) {
+        showToast(error.message || 'Đăng ký thất bại. Vui lòng thử lại!', 'error');
+      } else {
+        showToast('Kết nối thất bại. Vui lòng thử lại!', 'error');
+      }
+    } finally {
+      setIsLoading(false);
+    }
   };
 
   return (
@@ -38,52 +85,53 @@ const RegisterPage: React.FC = () => {
           <Typography component="h1" variant="h5" sx={{ fontWeight: 700, mb: 2 }}>
             Đăng ký
           </Typography>
-          <Box component="form" onSubmit={handleSubmit} sx={{ mt: 1, width: '100%' }}>
+          <Box component="form" onSubmit={handleSubmit} noValidate sx={{ mt: 1, width: '100%' }}>
             <TextField
               margin="normal"
-              required
               fullWidth
-              id="fullname"
               label="Họ tên"
-              name="fullname"
-              autoComplete="name"
-              value={fullname}
-              onChange={e => setFullname(e.target.value)}
-              InputProps={{ startAdornment: <PersonIcon sx={{ mr: 1, color: 'primary.main' }} /> }}
+              value={formData.fullname}
+              onChange={handleChange('fullname')}
+              error={!!errors.fullname}
+              helperText={errors.fullname}
+              InputProps={{
+                startAdornment: <PersonIcon sx={{ mr: 1, color: errors.fullname ? 'error.main' : 'primary.main' }} />
+              }}
             />
             <TextField
               margin="normal"
-              required
               fullWidth
-              id="username"
               label="Tài khoản"
-              name="username"
-              autoComplete="username"
-              value={username}
-              onChange={e => setUsername(e.target.value)}
-              InputProps={{ startAdornment: <AccountCircleIcon sx={{ mr: 1, color: 'primary.main' }} /> }}
+              value={formData.username}
+              onChange={handleChange('username')}
+              error={!!errors.username}
+              helperText={errors.username}
+              InputProps={{
+                startAdornment: <AccountCircleIcon sx={{ mr: 1, color: errors.username ? 'error.main' : 'primary.main' }} />
+              }}
             />
             <TextField
               margin="normal"
-              required
               fullWidth
-              name="password"
               label="Mật khẩu"
               type="password"
-              id="password"
-              autoComplete="current-password"
-              value={password}
-              onChange={e => setPassword(e.target.value)}
-              InputProps={{ startAdornment: <LockIcon sx={{ mr: 1, color: 'primary.main' }} /> }}
+              value={formData.password}
+              onChange={handleChange('password')}
+              error={!!errors.password}
+              helperText={errors.password}
+              InputProps={{
+                startAdornment: <LockIcon sx={{ mr: 1, color: errors.password ? 'error.main' : 'primary.main' }} />
+              }}
             />
             <Button
               type="submit"
               fullWidth
               variant="contained"
               color="primary"
+              disabled={isLoading}
               sx={{ mt: 3, mb: 2, fontWeight: 700, fontSize: 16 }}
             >
-              Đăng ký
+              {isLoading ? 'Đang đăng ký...' : 'Đăng ký'}
             </Button>
             <Box sx={{ display: 'flex', justifyContent: 'flex-end', alignItems: 'center', mt: 1 }}>
               <Typography variant="body2" sx={{ mr: 1 }}>
