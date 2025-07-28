@@ -53,6 +53,7 @@ const LoginPage: React.FC = () => {
 
     try {
       const response = await authApi.login(formData);
+      console.log(response.data?.access_token);
 
       if (response.status === 'Success') {
         showToast(response.message, 'success');

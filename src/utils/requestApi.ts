@@ -1,11 +1,10 @@
 import axios from 'axios';
 import type { AxiosRequestConfig } from 'axios';
-import type { ApiResponse } from '../types/apiResponse';
 
 export function createApiInstance(baseURL: string) {
   const api = axios.create({
     baseURL,
-    timeout: 30000,
+    timeout: 0,
   });
 
   api.interceptors.request.use((config) => {
@@ -17,8 +16,8 @@ export function createApiInstance(baseURL: string) {
     return config;
   });
 
-  const makeRequest = <T = unknown>(config: AxiosRequestConfig): Promise<ApiResponse<T>> => {
-    return api.request<ApiResponse<T>>(config)
+  const makeRequest = <T = unknown>(config: AxiosRequestConfig): Promise<T> => {
+    return api.request<T>(config)
       .then(res => res.data)
       .catch((err: unknown) => {
         if (typeof err === 'object' && err && 'response' in err) {

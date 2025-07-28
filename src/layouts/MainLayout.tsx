@@ -71,7 +71,7 @@ const MainLayout: React.FC<{ children: React.ReactElement }> = ({ children }) =>
       <AppBar position="static" sx={{ background: 'linear-gradient(to right, #1976d2, #42a5f5)' }} elevation={4}>
         <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
-            <span style={{ fontSize: 28, fontWeight: 800, letterSpacing: 1, textShadow: '0 2px 8px #0002' }}>ChatGPT Clone</span>
+            <span style={{ fontSize: 28, fontWeight: 800, letterSpacing: 1, textShadow: '0 2px 8px #0002' }}>ChatBot MTA</span>
           </Box>
           <UserMenu onLogout={handleLogout} />
         </Toolbar>

@@ -3,6 +3,7 @@ import ChatMessage from '../components/Chat/ChatMessage';
 import ChatInput from '../components/Chat/ChatInput';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faPaperPlane } from '@fortawesome/free-solid-svg-icons';
+import { modelApi } from "../utils/apis/modelApi";
 
 interface Message {
   id: string;
@@ -57,7 +58,7 @@ const ChatPage: React.FC<Props> = ({ chats, setChats, currentChatId, loggedIn, s
   }, [currentMessages, loading]);
 
   // Khi gửi tin nhắn đầu tiên, chuyển input xuống dưới với hiệu ứng
-  const handleSend = (msg: string) => {
+  const handleSend = async (msg: string) => {
     if (!msg.trim()) return;
     if (!showInputAtBottom) setShowInputAtBottom(true);
     if (loggedIn && setChats && currentChatId) {
@@ -65,13 +66,13 @@ const ChatPage: React.FC<Props> = ({ chats, setChats, currentChatId, loggedIn, s
         prev.map((chat) =>
           chat.id === currentChatId
             ? {
-                ...chat,
-                messages: [
-                  ...chat.messages,
-                  { id: Date.now().toString(), role: 'user', content: msg },
-                  { id: (Date.now() + 1).toString(), role: 'assistant', content: '__loading__' },
-                ],
-              }
+              ...chat,
+              messages: [
+                ...chat.messages,
+                { id: Date.now().toString(), role: 'user', content: msg },
+                { id: (Date.now() + 1).toString(), role: 'assistant', content: '__loading__' },
+              ],
+            }
             : chat
         )
       );
@@ -80,32 +81,33 @@ const ChatPage: React.FC<Props> = ({ chats, setChats, currentChatId, loggedIn, s
         prev.map((chat) =>
           chat.id === guestCurrentChatId
             ? {
-                ...chat,
-                messages: [
-                  ...chat.messages,
-                  { id: Date.now().toString(), role: 'user', content: msg },
-                  { id: (Date.now() + 1).toString(), role: 'assistant', content: '__loading__' },
-                ],
-              }
+              ...chat,
+              messages: [
+                ...chat.messages,
+                { id: Date.now().toString(), role: 'user', content: msg },
+                { id: (Date.now() + 1).toString(), role: 'assistant', content: '__loading__' },
+              ],
+            }
             : chat
         )
       );
     }
     setInput('');
     setLoading(true);
-    setTimeout(() => {
+    try {
+      const response = await modelApi.getResponse(msg);
       if (loggedIn && setChats && currentChatId) {
         setChats((prev) =>
           prev.map((chat) =>
             chat.id === currentChatId
               ? {
-                  ...chat,
-                  messages: chat.messages.map((m) =>
-                    m.content === '__loading__'
-                      ? { ...m, content: 'Đây là phản hồi mẫu.' }
-                      : m
-                  ),
-                }
+                ...chat,
+                messages: chat.messages.map((m) =>
+                  m.content === '__loading__'
+                    ? { ...m, content: response }
+                    : m
+                ),
+              }
               : chat
           )
         );
@@ -114,19 +116,51 @@ const ChatPage: React.FC<Props> = ({ chats, setChats, currentChatId, loggedIn, s
           prev.map((chat) =>
             chat.id === guestCurrentChatId
               ? {
-                  ...chat,
-                  messages: chat.messages.map((m) =>
-                    m.content === '__loading__'
-                      ? { ...m, content: 'Đây là phản hồi mẫu.' }
-                      : m
-                  ),
-                }
+                ...chat,
+                messages: chat.messages.map((m) =>
+                  m.content === '__loading__'
+                    ? { ...m, content: response }
+                    : m
+                ),
+              }
               : chat
           )
         );
       }
-      setLoading(false);
-    }, 1000);
+    } catch {
+      if (loggedIn && setChats && currentChatId) {
+        setChats((prev) =>
+          prev.map((chat) =>
+            chat.id === currentChatId
+              ? {
+                ...chat,
+                messages: chat.messages.map((m) =>
+                  m.content === '__loading__'
+                    ? { ...m, content: 'Đã có lỗi xảy ra.' }
+                    : m
+                ),
+              }
+              : chat
+          )
+        );
+      } else if (setGuestChats && guestCurrentChatId) {
+        setGuestChats((prev) =>
+          prev.map((chat) =>
+            chat.id === guestCurrentChatId
+              ? {
+                ...chat,
+                messages: chat.messages.map((m) =>
+                  m.content === '__loading__'
+                    ? { ...m, content: 'Đã có lỗi xảy ra.' }
+                    : m
+                ),
+              }
+              : chat
+          )
+        );
+      }
+    }
+    setLoading(false);
   };
 
   // Reset showInputAtBottom khi chuyển sang chat khác mà chưa có tin nhắn
