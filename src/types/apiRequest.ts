@@ -8,3 +8,12 @@ export interface RegisterRequest {
   username: string;
   password: string;
 }
+
+export interface CreateChatRequest {
+  title: string;
+}
+
+export interface CreateMessageRequest {
+  content: string;
+  role: string;
+}

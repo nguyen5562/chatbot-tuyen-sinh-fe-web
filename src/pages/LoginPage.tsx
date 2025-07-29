@@ -57,12 +57,13 @@ const LoginPage: React.FC = () => {
 
       if (response.status === 'Success') {
         showToast(response.message, 'success');
-        login(response.data?.user.fullname, response.data?.user.role, response.data?.access_token);
+        login(response.data?.user.fullname, response.data?.user.role, response.data?.access_token, response.data?.user.id);
         navigate('/');
 
         console.log(localStorage.getItem("user"));
         console.log(localStorage.getItem("role"));
         console.log(localStorage.getItem("token"));
+        console.log(localStorage.getItem("userId"));
       } else {
         showToast(response.message || 'Đăng nhập thất bại. Vui lòng thử lại!', 'error');
       }
