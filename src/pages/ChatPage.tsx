@@ -28,7 +28,7 @@ const ChatPage: React.FC = () => {
   const currentChatId = useChatStore((state) => state.currentChatId);
   const setChats = useChatStore((state) => state.setChats);
   const setCurrentChatId = useChatStore((state) => state.setCurrentChatId);
-  const addChat = useChatStore((state) => state.addChat);
+  // const addChat = useChatStore((state) => state.addChat);
   const addMessage = useChatStore((state) => state.addMessage);
   const updateAssistantMessage = useChatStore((state) => state.updateAssistantMessage);
 
@@ -38,13 +38,17 @@ const ChatPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [showInputAtBottom, setShowInputAtBottom] = useState(false);
 
-  // Lấy danh sách chat khi đăng nhập
+  // Thêm hằng cho id cuộc hội thoại mới
+  const NEW_CHAT_ID = 'new';
+
+  // useEffect lấy danh sách chat khi đăng nhập
   useEffect(() => {
     if (loggedIn && userId) {
       chatApi.getChatByUser(userId).then((res) => {
         if (res.status === 'Success' && res.data) {
-          setChats(res.data);
-          if (res.data.length > 0) setCurrentChatId(res.data[0].id);
+          // Thêm 'Cuộc hội thoại mới' vào đầu danh sách
+          setChats([{ id: NEW_CHAT_ID, title: 'Cuộc hội thoại mới', messages: [] }, ...res.data]);
+          setCurrentChatId(NEW_CHAT_ID); // Luôn chọn cuộc hội thoại mới khi vào
         }
       });
     }
@@ -53,15 +57,16 @@ const ChatPage: React.FC = () => {
   // Hàm tạo chat mới
   const handleNewChat = async () => {
     if (loggedIn && userId) {
-      try {
-        const res = await chatApi.createChat(userId, { title: 'Cuộc hội thoại mới' });
-        if (res.status === 'Success' && res.data) {
-          addChat(res.data);
-          setCurrentChatId(res.data.id);
-        }
-      } catch (error) {
-        console.log(error);
+      // Kiểm tra xem đã có 'Cuộc hội thoại mới' chưa
+      const hasNewChat = chats.some(chat => chat.id === NEW_CHAT_ID);
+      if (!hasNewChat) {
+        // Chỉ tạo 'Cuộc hội thoại mới' nếu chưa có
+        setChats([
+          { id: NEW_CHAT_ID, title: 'Cuộc hội thoại mới', messages: [] },
+          ...chats
+        ]);
       }
+      setCurrentChatId(NEW_CHAT_ID);
       setShowInputAtBottom(false);
     } else {
       // Guest logic giữ nguyên
@@ -78,7 +83,11 @@ const ChatPage: React.FC = () => {
   // Lấy messages của chat đang chọn
   let currentMessages: Message[] = [];
   if (loggedIn && chats && currentChatId) {
-    currentMessages = chats.find((c) => c.id === currentChatId)?.messages || [];
+    if (currentChatId === NEW_CHAT_ID) {
+      currentMessages = [];
+    } else {
+      currentMessages = chats.find((c) => c.id === currentChatId)?.messages || [];
+    }
   } else if (guestChats && guestCurrentChatId) {
     currentMessages = guestChats.find((c) => c.id === guestCurrentChatId)?.messages || [];
   }
@@ -93,30 +102,64 @@ const ChatPage: React.FC = () => {
   const handleSend = async (msg: string) => {
     if (!msg.trim()) return;
     if (!showInputAtBottom) setShowInputAtBottom(true);
-    if (loggedIn && currentChatId) {
-      // Hiển thị loading giống guest
-      const userMsg = { id: Date.now().toString(), role: 'user', content: msg };
-      const loadingMsg = { id: (Date.now() + 1).toString(), role: 'assistant', content: '__loading__' };
-      addMessage(currentChatId, userMsg);
-      addMessage(currentChatId, loadingMsg);
-      setInput('');
-      setLoading(true);
-      try {
-        // Lấy response từ model
-        const response = await modelApi.getResponse(msg);
-        if (response) {
-          // Gửi tin nhắn user lên API
-          await chatApi.sendMessage(currentChatId, { content: msg, role: 'user' });
-          // Gửi tin nhắn assistant lên API
-          await chatApi.sendMessage(currentChatId, { content: response, role: 'assistant' });
-          // Cập nhật lại content của assistant (replace loading)
-          updateAssistantMessage(currentChatId, response);
+    if (loggedIn) {
+      if (currentChatId === NEW_CHAT_ID) {
+        // Nếu đang ở cuộc hội thoại mới, tạo chat mới trước
+        try {
+          if (!userId) throw new Error('userId is required');
+          const res = await chatApi.createChat(userId, { title: 'Cuộc hội thoại mới' });
+          if (res.status === 'Success' && res.data) {
+            // Thay thế 'Cuộc hội thoại mới' bằng chat thật vừa tạo
+            const chatsWithoutNew = chats.filter((c) => c.id !== NEW_CHAT_ID);
+            setChats([
+              res.data!,
+              ...chatsWithoutNew
+            ]);
+            setCurrentChatId(res.data.id);
+            // Gửi tin nhắn vào chat mới
+            const userMsg = { id: Date.now().toString(), role: 'user', content: msg };
+            const loadingMsg = { id: (Date.now() + 1).toString(), role: 'assistant', content: '__loading__' };
+            addMessage(res.data.id, userMsg);
+            addMessage(res.data.id, loadingMsg);
+            setInput('');
+            setLoading(true);
+            try {
+              const response = await modelApi.getResponse(msg);
+              if (response) {
+                await chatApi.sendMessage(res.data.id, { content: msg, role: 'user' });
+                await chatApi.sendMessage(res.data.id, { content: response, role: 'assistant' });
+                updateAssistantMessage(res.data.id, response);
+              }
+            } catch {
+              updateAssistantMessage(res.data.id, 'Đã có lỗi xảy ra.');
+            }
+            setLoading(false);
+          }
+        } catch (error) {
+          console.log(error);
+          setLoading(false);
         }
-      } catch {
-        // Nếu lỗi, cập nhật lại content của assistant
-        updateAssistantMessage(currentChatId, 'Đã có lỗi xảy ra.');
+        return;
+      } else if (currentChatId && typeof currentChatId === 'string') {
+        // Gửi tin nhắn vào chat đã có
+        const userMsg = { id: Date.now().toString(), role: 'user', content: msg };
+        const loadingMsg = { id: (Date.now() + 1).toString(), role: 'assistant', content: '__loading__' };
+        addMessage(currentChatId, userMsg);
+        addMessage(currentChatId, loadingMsg);
+        setInput('');
+        setLoading(true);
+        try {
+          const response = await modelApi.getResponse(msg);
+          if (response) {
+            await chatApi.sendMessage(currentChatId, { content: msg, role: 'user' });
+            await chatApi.sendMessage(currentChatId, { content: response, role: 'assistant' });
+            updateAssistantMessage(currentChatId, response);
+          }
+        } catch {
+          updateAssistantMessage(currentChatId, 'Đã có lỗi xảy ra.');
+        }
+        setLoading(false);
       }
-      setLoading(false);
     } else if (guestCurrentChatId) {
       // Guest logic giữ nguyên
       setGuestChats((prev) =>
@@ -192,12 +235,15 @@ const ChatPage: React.FC = () => {
   const chatBg = 'linear-gradient(135deg, #e3f0ff 0%, #b3d1fa 100%)';
   const sidebarWidth = 288;
 
+  console.log("chats", chats);
+  console.log(currentChatId === NEW_CHAT_ID)
+
   return (
     <Box sx={{ display: 'flex', flex: 1, minHeight: 0 }}>
       {/* Sidebar ChatHistory */}
       <Box sx={{ width: sidebarWidth, bgcolor: 'white', borderRight: 1, borderColor: 'divider', p: 0, zIndex: 10, minHeight: 0, height: '100vh', overflowY: 'auto' }}>
         <ChatHistory
-          chats={(loggedIn ? chats : guestChats).map(({ id, title }) => ({ id, title }))}
+          chats={loggedIn ? chats : guestChats}
           currentChatId={loggedIn ? currentChatId : guestCurrentChatId}
           onSelect={loggedIn ? setCurrentChatId : setGuestCurrentChatId}
           onNewChat={handleNewChat}
