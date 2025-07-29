@@ -16,7 +16,7 @@ const SELECTED_BG_HOVER = '#0d47a1'; // blue[900]
 
 interface Props {
   chats?: Chat[];
-  currentChatId?: string;
+  currentChatId: string | null;
   onSelect?: (id: string) => void;
   onNewChat?: () => void;
   loggedIn?: boolean;

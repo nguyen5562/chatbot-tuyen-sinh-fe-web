@@ -9,9 +9,10 @@ interface Props {
   value: string;
   onChange: (v: string) => void;
   onSend: (msg: string) => void;
+  disabled?: boolean;
 }
 
-const ChatInput: React.FC<Props> = ({ value, onChange, onSend }) => {
+const ChatInput: React.FC<Props> = ({ value, onChange, onSend, disabled }) => {
   const [focus, setFocus] = useState(false);
   return (
     <Box display="flex" alignItems="center" gap={2}>
@@ -20,7 +21,7 @@ const ChatInput: React.FC<Props> = ({ value, onChange, onSend }) => {
         sx={{ display: 'flex', alignItems: 'center', flex: 1, p: 1.5, borderRadius: 8, boxShadow: 3 }}
         onSubmit={e => {
           e.preventDefault();
-          onSend(value);
+          if (!disabled) onSend(value);
         }}
         elevation={3}
       >
@@ -33,12 +34,13 @@ const ChatInput: React.FC<Props> = ({ value, onChange, onSend }) => {
           onBlur={() => setFocus(false)}
           InputProps={{ disableUnderline: true }}
           sx={{ flex: 1, mx: 1, fontSize: 18, bgcolor: 'transparent' }}
+          disabled={disabled}
         />
       </Paper>
       <Box
         component="button"
         type="submit"
-        onClick={e => { e.preventDefault(); onSend(value); }}
+        onClick={e => { e.preventDefault(); if (!disabled) onSend(value); }}
         sx={{
           ml: 1,
           bgcolor: focus ? 'primary.main' : 'primary.light',
@@ -51,10 +53,12 @@ const ChatInput: React.FC<Props> = ({ value, onChange, onSend }) => {
           justifyContent: 'center',
           boxShadow: 3,
           border: 'none',
-          cursor: 'pointer',
+          cursor: disabled ? 'not-allowed' : 'pointer',
+          opacity: disabled ? 0.5 : 1,
           transition: 'background 0.2s',
           '&:hover': { bgcolor: 'primary.main' },
         }}
+        disabled={disabled}
       >
         <FontAwesomeIcon icon={faPaperPlane} size="lg" />
       </Box>

@@ -1,5 +1,5 @@
 import type { ApiResponse } from "../../types/apiResponse";
-import type { Chat, ChatDTO } from "../../types/chat";
+import type { ChatDTO } from "../../types/chat";
 import type {
   CreateChatRequest,
   CreateMessageRequest,
@@ -13,8 +13,8 @@ const api = createApiInstance(chatApiBaseURL);
 const createChat = async (
   userId: string,
   chat: CreateChatRequest
-): Promise<ApiResponse<Chat>> => {
-  return api.makeRequest<ApiResponse<Chat>>({
+): Promise<ApiResponse<ChatDTO>> => {
+  return api.makeRequest<ApiResponse<ChatDTO>>({
     url: `/chat/${userId}`,
     method: "POST",
     data: chat,

@@ -7,7 +7,7 @@ import Box from '@mui/material/Box';
 
 const MainLayout: React.FC<{ children: React.ReactElement }> = ({ children }) => {
   return (
-    <Box sx={{ minHeight: '100vh', display: 'flex', flexDirection: 'column', bgcolor: 'background.default' }}>
+    <Box sx={{ height: '100vh', minHeight: '100vh', display: 'flex', flexDirection: 'column', bgcolor: 'background.default', overflow: 'hidden' }}>
       <AppBar position="static" sx={{ background: 'linear-gradient(to right, #1976d2, #42a5f5)' }} elevation={4}>
         <Toolbar sx={{ display: 'flex', justifyContent: 'space-between', gap: 2 }}>
           <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -16,11 +16,9 @@ const MainLayout: React.FC<{ children: React.ReactElement }> = ({ children }) =>
           <UserMenu />
         </Toolbar>
       </AppBar>
-      <Box sx={{ display: 'flex', flex: 1, minHeight: 0 }}>
-        {/* Không còn sidebar ChatHistory ở đây nữa */}
-        <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
-          {children}
-        </Box>
+      <Box sx={{ flex: 1, minHeight: 0, display: 'flex', flexDirection: 'column', overflow: 'hidden' }}>
+        {/* Children (chat page) will handle its own scrollable areas */}
+        {children}
       </Box>
     </Box>
   );

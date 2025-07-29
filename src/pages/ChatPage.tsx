@@ -5,39 +5,32 @@ import ChatHistory from '../components/Chat/ChatHistory';
 import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import { modelApi } from "../utils/apis/modelApi";
+import { chatApi } from "../utils/apis/chatApi";
 import Box from '@mui/material/Box';
 import { useAuthStore } from '../store/authStore';
+import { useChatStore } from '../store/chatStore';
 import type { ChatDTO } from '../types/chat';
 import type { Message } from '../types/message';
 
 const ChatPage: React.FC = () => {
-  // State chat cho user đã đăng nhập
-  const [chats, setChats] = useState<ChatDTO[]>([
-    {
-      id: '1',
-      title: 'Cuộc trò chuyện 1',
-      messages: [
-        { id: 'm1', role: 'assistant', content: 'Chào bạn! Tôi có thể giúp gì?' },
-        { id: 'm2', role: 'user', content: 'Xin chào!' },
-      ],
-    },
-    {
-      id: '2',
-      title: 'Cuộc trò chuyện 2',
-      messages: [
-        { id: 'm1', role: 'user', content: 'React là gì?' },
-        { id: 'm2', role: 'assistant', content: 'React là một thư viện UI của Facebook.' },
-      ],
-    },
-  ]);
-  const [currentChatId, setCurrentChatId] = useState('1');
-  // State chat cho guest
+  // Guest chat state giữ nguyên
   const [guestChats, setGuestChats] = useState<ChatDTO[]>([
     { id: 'g1', title: 'Cuộc hội thoại mới', messages: [] },
   ]);
   const [guestCurrentChatId, setGuestCurrentChatId] = useState('g1');
 
+  // Auth
   const loggedIn = useAuthStore((state) => state.loggedIn);
+  const userId = useAuthStore((state) => state.userId);
+
+  // Chat store
+  const chats = useChatStore((state) => state.chats);
+  const currentChatId = useChatStore((state) => state.currentChatId);
+  const setChats = useChatStore((state) => state.setChats);
+  const setCurrentChatId = useChatStore((state) => state.setCurrentChatId);
+  const addChat = useChatStore((state) => state.addChat);
+  const addMessage = useChatStore((state) => state.addMessage);
+  const updateAssistantMessage = useChatStore((state) => state.updateAssistantMessage);
 
   // State cho input và loading
   const chatRef = useRef<HTMLDivElement>(null);
@@ -45,28 +38,44 @@ const ChatPage: React.FC = () => {
   const [loading, setLoading] = useState(false);
   const [showInputAtBottom, setShowInputAtBottom] = useState(false);
 
+  // Lấy danh sách chat khi đăng nhập
+  useEffect(() => {
+    if (loggedIn && userId) {
+      chatApi.getChatByUser(userId).then((res) => {
+        if (res.status === 'Success' && res.data) {
+          setChats(res.data);
+          if (res.data.length > 0) setCurrentChatId(res.data[0].id);
+        }
+      });
+    }
+  }, [loggedIn, userId, setChats, setCurrentChatId]);
+
   // Hàm tạo chat mới
-  const handleNewChat = () => {
-    if (loggedIn) {
-      const newId = Date.now().toString();
-      setChats(prev => [
-        { id: newId, title: 'Cuộc trò chuyện mới', messages: [] },
-        ...prev,
-      ]);
-      setCurrentChatId(newId);
+  const handleNewChat = async () => {
+    if (loggedIn && userId) {
+      try {
+        const res = await chatApi.createChat(userId, { title: 'Cuộc hội thoại mới' });
+        if (res.status === 'Success' && res.data) {
+          addChat(res.data);
+          setCurrentChatId(res.data.id);
+        }
+      } catch (error) {
+        console.log(error);
+      }
+      setShowInputAtBottom(false);
     } else {
+      // Guest logic giữ nguyên
       const newId = 'g' + Date.now().toString();
       setGuestChats(prev => [
         { id: newId, title: 'Cuộc hội thoại mới', messages: [] },
         ...prev,
       ]);
       setGuestCurrentChatId(newId);
+      setShowInputAtBottom(false);
     }
-    setShowInputAtBottom(false);
   };
 
   // Lấy messages của chat đang chọn
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   let currentMessages: Message[] = [];
   if (loggedIn && chats && currentChatId) {
     currentMessages = chats.find((c) => c.id === currentChatId)?.messages || [];
@@ -80,26 +89,36 @@ const ChatPage: React.FC = () => {
     }
   }, [currentMessages, loading]);
 
-  // Khi gửi tin nhắn đầu tiên, chuyển input xuống dưới với hiệu ứng
+  // Gửi tin nhắn
   const handleSend = async (msg: string) => {
     if (!msg.trim()) return;
     if (!showInputAtBottom) setShowInputAtBottom(true);
     if (loggedIn && currentChatId) {
-      setChats((prev) =>
-        prev.map((chat) =>
-          chat.id === currentChatId
-            ? {
-                ...chat,
-                messages: [
-                  ...chat.messages,
-                  { id: Date.now().toString(), role: 'user', content: msg },
-                  { id: (Date.now() + 1).toString(), role: 'assistant', content: '__loading__' },
-                ],
-              }
-            : chat
-        )
-      );
+      // Hiển thị loading giống guest
+      const userMsg = { id: Date.now().toString(), role: 'user', content: msg };
+      const loadingMsg = { id: (Date.now() + 1).toString(), role: 'assistant', content: '__loading__' };
+      addMessage(currentChatId, userMsg);
+      addMessage(currentChatId, loadingMsg);
+      setInput('');
+      setLoading(true);
+      try {
+        // Lấy response từ model
+        const response = await modelApi.getResponse(msg);
+        if (response) {
+          // Gửi tin nhắn user lên API
+          await chatApi.sendMessage(currentChatId, { content: msg, role: 'user' });
+          // Gửi tin nhắn assistant lên API
+          await chatApi.sendMessage(currentChatId, { content: response, role: 'assistant' });
+          // Cập nhật lại content của assistant (replace loading)
+          updateAssistantMessage(currentChatId, response);
+        }
+      } catch {
+        // Nếu lỗi, cập nhật lại content của assistant
+        updateAssistantMessage(currentChatId, 'Đã có lỗi xảy ra.');
+      }
+      setLoading(false);
     } else if (guestCurrentChatId) {
+      // Guest logic giữ nguyên
       setGuestChats((prev) =>
         prev.map((chat) =>
           chat.id === guestCurrentChatId
@@ -114,27 +133,10 @@ const ChatPage: React.FC = () => {
             : chat
         )
       );
-    }
-    setInput('');
-    setLoading(true);
-    try {
-      const response = await modelApi.getResponse(msg);
-      if (loggedIn && currentChatId) {
-        setChats((prev) =>
-          prev.map((chat) =>
-            chat.id === currentChatId
-              ? {
-                  ...chat,
-                  messages: chat.messages.map((m) =>
-                    m.content === '__loading__'
-                      ? { ...m, content: response }
-                      : m
-                  ),
-                }
-              : chat
-          )
-        );
-      } else if (guestCurrentChatId) {
+      setInput('');
+      setLoading(true);
+      try {
+        const response = await modelApi.getResponse(msg);
         setGuestChats((prev) =>
           prev.map((chat) =>
             chat.id === guestCurrentChatId
@@ -149,24 +151,7 @@ const ChatPage: React.FC = () => {
               : chat
           )
         );
-      }
-    } catch {
-      if (loggedIn && currentChatId) {
-        setChats((prev) =>
-          prev.map((chat) =>
-            chat.id === currentChatId
-              ? {
-                  ...chat,
-                  messages: chat.messages.map((m) =>
-                    m.content === '__loading__'
-                      ? { ...m, content: 'Đã có lỗi xảy ra.' }
-                      : m
-                  ),
-                }
-              : chat
-          )
-        );
-      } else if (guestCurrentChatId) {
+      } catch {
         setGuestChats((prev) =>
           prev.map((chat) =>
             chat.id === guestCurrentChatId
@@ -182,8 +167,8 @@ const ChatPage: React.FC = () => {
           )
         );
       }
+      setLoading(false);
     }
-    setLoading(false);
   };
 
   // Reset showInputAtBottom khi chuyển sang chat khác mà chưa có tin nhắn
@@ -191,7 +176,6 @@ const ChatPage: React.FC = () => {
     if (currentMessages.length === 0) {
       setShowInputAtBottom(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loggedIn ? currentChatId : guestCurrentChatId]);
 
   // Reset guest chat state khi logout
@@ -206,14 +190,12 @@ const ChatPage: React.FC = () => {
   // Giao diện new chat nếu chưa có tin nhắn
   const isNewChat = currentMessages.length === 0 && !showInputAtBottom;
   const chatBg = 'linear-gradient(135deg, #e3f0ff 0%, #b3d1fa 100%)';
-
-  // Sidebar width
   const sidebarWidth = 288;
 
   return (
     <Box sx={{ display: 'flex', flex: 1, minHeight: 0 }}>
       {/* Sidebar ChatHistory */}
-      <Box sx={{ width: sidebarWidth, bgcolor: 'white', borderRight: 1, borderColor: 'divider', p: 0, zIndex: 10, minHeight: 0 }}>
+      <Box sx={{ width: sidebarWidth, bgcolor: 'white', borderRight: 1, borderColor: 'divider', p: 0, zIndex: 10, minHeight: 0, height: '100vh', overflowY: 'auto' }}>
         <ChatHistory
           chats={(loggedIn ? chats : guestChats).map(({ id, title }) => ({ id, title }))}
           currentChatId={loggedIn ? currentChatId : guestCurrentChatId}
@@ -223,7 +205,7 @@ const ChatPage: React.FC = () => {
         />
       </Box>
       {/* Main chat area */}
-      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0 }}>
+      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, height: '100vh' }}>
         <div className="flex flex-col h-full min-h-0 w-full relative overflow-hidden">
           {/* Nền gradient cố định */}
           <div style={{ position: 'absolute', inset: 0, zIndex: 0, background: chatBg }} />
@@ -238,7 +220,7 @@ const ChatPage: React.FC = () => {
                 className="relative w-full max-w-2xl flex items-center"
                 onSubmit={e => {
                   e.preventDefault();
-                  handleSend(input);
+                  if (!loading) handleSend(input);
                 }}
               >
                 <div className="flex-1 flex items-center bg-white rounded-full shadow-2xl px-8 py-4 text-lg w-full">
@@ -248,11 +230,13 @@ const ChatPage: React.FC = () => {
                     placeholder="Nhập tin nhắn..."
                     value={input}
                     onChange={e => setInput(e.target.value)}
+                    disabled={loading}
                   />
                 </div>
                 <button
                   type="submit"
                   className="ml-4 bg-blue-600 text-white w-12 h-12 rounded-full flex items-center justify-center text-2xl shadow-lg hover:bg-blue-700 transition-all"
+                  disabled={loading}
                 >
                   <FontAwesomeIcon icon={faPaperPlane} />
                 </button>
@@ -263,7 +247,7 @@ const ChatPage: React.FC = () => {
           <div
             className={`flex flex-col h-full min-h-0 w-full transition-all duration-700 z-10 ${isNewChat ? 'opacity-0 pointer-events-none translate-y-[-32px]' : 'opacity-100 pointer-events-auto'}`}
           >
-            <div ref={chatRef} className="flex-1 overflow-y-auto px-4 py-8 space-y-6 scrollbar-thin scrollbar-thumb-blue-200 scrollbar-track-transparent bg-transparent">
+            <div ref={chatRef} className="flex-1 overflow-y-auto px-4 py-8 space-y-6 scrollbar-thin scrollbar-thumb-blue-200 scrollbar-track-transparent bg-transparent" style={{ maxHeight: 'calc(100vh - 120px)', minHeight: 0 }}>
               {currentMessages.map((msg, idx) =>
                 msg.content === '__loading__' ? (
                   <div key={msg.id + idx} className="flex items-center gap-2 text-gray-500 animate-pulse">
@@ -275,11 +259,12 @@ const ChatPage: React.FC = () => {
                 )
               )}
             </div>
-            <div className="px-4 pb-8 pt-2 bg-gradient-to-t from-white/90 to-transparent">
+            <div className="px-4 pb-20 pt-2 bg-gradient-to-t transparent">
               <ChatInput
                 value={input}
                 onChange={setInput}
-                onSend={handleSend}
+                onSend={msg => { if (!loading) handleSend(msg); }}
+                disabled={loading}
               />
             </div>
           </div>
