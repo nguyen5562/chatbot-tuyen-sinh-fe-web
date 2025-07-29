@@ -12,7 +12,7 @@ import LockOutlinedIcon from '@mui/icons-material/LockOutlined';
 import AccountCircleIcon from '@mui/icons-material/AccountCircle';
 import LockIcon from '@mui/icons-material/Lock';
 import { authApi } from '../utils/apis/authApi';
-import { useAuth } from '../components/Auth/AuthContext';
+import { useAuthStore } from '../store/authStore';
 
 const LoginPage: React.FC = () => {
   const [formData, setFormData] = useState({
@@ -22,7 +22,7 @@ const LoginPage: React.FC = () => {
   const [errors, setErrors] = useState<{ [key: string]: string }>({});
   const [isLoading, setIsLoading] = useState(false);
   const navigate = useNavigate();
-  const { login } = useAuth();
+  const login = useAuthStore((state) => state.login);
   const { showToast } = useToast();
 
   const handleChange = (field: string) => (e: React.ChangeEvent<HTMLInputElement>) => {
@@ -54,12 +54,15 @@ const LoginPage: React.FC = () => {
 
     try {
       const response = await authApi.login(formData);
-      console.log(response.data?.access_token);
 
       if (response.status === 'Success') {
         showToast(response.message, 'success');
-        login(formData.username, formData.password);
+        login(response.data?.user.fullname, response.data?.user.role, response.data?.access_token);
         navigate('/');
+
+        console.log(localStorage.getItem("user"));
+        console.log(localStorage.getItem("role"));
+        console.log(localStorage.getItem("token"));
       } else {
         showToast(response.message || 'Đăng nhập thất bại. Vui lòng thử lại!', 'error');
       }

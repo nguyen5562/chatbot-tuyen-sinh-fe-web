@@ -6,7 +6,7 @@ import { FontAwesomeIcon } from '@fortawesome/react-fontawesome';
 import { faSpinner, faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import { modelApi } from "../utils/apis/modelApi";
 import Box from '@mui/material/Box';
-import { useAuth } from '../components/Auth/AuthContext';
+import { useAuthStore } from '../store/authStore';
 
 interface Message {
   id: string;
@@ -46,7 +46,7 @@ const ChatPage: React.FC = () => {
   ]);
   const [guestCurrentChatId, setGuestCurrentChatId] = useState('g1');
 
-  const { loggedIn } = useAuth();
+  const loggedIn = useAuthStore((state) => state.loggedIn);
 
   // State cho input và loading
   const chatRef = useRef<HTMLDivElement>(null);
@@ -75,6 +75,7 @@ const ChatPage: React.FC = () => {
   };
 
   // Lấy messages của chat đang chọn
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   let currentMessages: Message[] = [];
   if (loggedIn && chats && currentChatId) {
     currentMessages = chats.find((c) => c.id === currentChatId)?.messages || [];
@@ -199,6 +200,7 @@ const ChatPage: React.FC = () => {
     if (currentMessages.length === 0) {
       setShowInputAtBottom(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loggedIn ? currentChatId : guestCurrentChatId]);
 
   // Reset guest chat state khi logout

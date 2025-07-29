@@ -1,6 +1,6 @@
 import React, { useState } from "react";
 import { useNavigate } from "react-router-dom";
-import { useAuth } from "./AuthContext";
+import { useAuthStore } from '../../store/authStore';
 import { useToast } from '../Toast/toastContext';
 import Avatar from "@mui/material/Avatar";
 import IconButton from "@mui/material/IconButton";
@@ -15,6 +15,7 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import LoginIcon from "@mui/icons-material/Login";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import Button from "@mui/material/Button";
+import { isAdmin } from '../../utils/localStorage';
 
 interface UserMenuProps {
   onLogout?: () => void;
@@ -26,8 +27,10 @@ const UserMenu: React.FC<UserMenuProps> = ({ onLogout, isAdminPage }) => {
   const open = Boolean(anchorEl);
   const navigate = useNavigate();
   const username = localStorage.getItem("user") || "User";
-  const { loggedIn, logout } = useAuth();
+  const loggedIn = useAuthStore((state) => state.loggedIn);
+  const logout = useAuthStore((state) => state.logout);
   const { showToast } = useToast();
+  const roleIsAdmin = isAdmin();
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -126,13 +129,17 @@ const UserMenu: React.FC<UserMenuProps> = ({ onLogout, isAdminPage }) => {
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        <MenuItem onClick={() => navigate("/admin")}>
-          <ListItemIcon>
-            <AdminPanelSettingsIcon color="primary" />
-          </ListItemIcon>
-          <ListItemText>Admin</ListItemText>
-        </MenuItem>
-        <Divider />
+        {roleIsAdmin && (
+          <>
+            <MenuItem onClick={() => navigate("/admin")}> 
+              <ListItemIcon>
+                <AdminPanelSettingsIcon color="primary" />
+              </ListItemIcon>
+              <ListItemText>Admin</ListItemText>
+            </MenuItem>
+            <Divider />
+          </>
+        )}
         <MenuItem onClick={handleLogout}>
           <ListItemIcon>
             <LogoutIcon color="error" />
