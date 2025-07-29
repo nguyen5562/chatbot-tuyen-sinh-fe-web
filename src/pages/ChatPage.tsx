@@ -7,21 +7,12 @@ import { faSpinner, faPaperPlane } from '@fortawesome/free-solid-svg-icons';
 import { modelApi } from "../utils/apis/modelApi";
 import Box from '@mui/material/Box';
 import { useAuthStore } from '../store/authStore';
-
-interface Message {
-  id: string;
-  role: 'user' | 'assistant';
-  content: string;
-}
-export interface Chat {
-  id: string;
-  title: string;
-  messages: Message[];
-}
+import type { ChatDTO } from '../types/chat';
+import type { Message } from '../types/message';
 
 const ChatPage: React.FC = () => {
   // State chat cho user đã đăng nhập
-  const [chats, setChats] = useState<Chat[]>([
+  const [chats, setChats] = useState<ChatDTO[]>([
     {
       id: '1',
       title: 'Cuộc trò chuyện 1',
@@ -41,7 +32,7 @@ const ChatPage: React.FC = () => {
   ]);
   const [currentChatId, setCurrentChatId] = useState('1');
   // State chat cho guest
-  const [guestChats, setGuestChats] = useState<Chat[]>([
+  const [guestChats, setGuestChats] = useState<ChatDTO[]>([
     { id: 'g1', title: 'Cuộc hội thoại mới', messages: [] },
   ]);
   const [guestCurrentChatId, setGuestCurrentChatId] = useState('g1');

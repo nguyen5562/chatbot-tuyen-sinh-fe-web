@@ -9,14 +9,10 @@ import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 import AddIcon from '@mui/icons-material/Add';
 import ChatBubbleOutlineIcon from '@mui/icons-material/ChatBubbleOutline';
+import type { Chat } from '../../types/chat';
 
 const SELECTED_BG = '#1565c0'; // blue[800]
 const SELECTED_BG_HOVER = '#0d47a1'; // blue[900]
-
-interface Chat {
-  id: string;
-  title: string;
-}
 
 interface Props {
   chats?: Chat[];
