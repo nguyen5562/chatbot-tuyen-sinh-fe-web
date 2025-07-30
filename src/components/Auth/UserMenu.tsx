@@ -15,8 +15,6 @@ import LogoutIcon from "@mui/icons-material/Logout";
 import LoginIcon from "@mui/icons-material/Login";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
 import Button from "@mui/material/Button";
-import { isAdmin } from '../../utils/localStorage';
-
 interface UserMenuProps {
   onLogout?: () => void;
   isAdminPage?: boolean;
@@ -26,11 +24,13 @@ const UserMenu: React.FC<UserMenuProps> = ({ onLogout, isAdminPage }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
   const open = Boolean(anchorEl);
   const navigate = useNavigate();
-  const username = localStorage.getItem("user") || "User";
   const loggedIn = useAuthStore((state) => state.loggedIn);
+  const user = useAuthStore((state) => state.user);
+  const role = useAuthStore((state) => state.role);
   const logout = useAuthStore((state) => state.logout);
   const { showToast } = useToast();
-  const roleIsAdmin = isAdmin();
+  const username = user || "User";
+  const roleIsAdmin = role === 'admin';
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -72,19 +72,21 @@ const UserMenu: React.FC<UserMenuProps> = ({ onLogout, isAdminPage }) => {
           anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
           transformOrigin={{ vertical: "top", horizontal: "right" }}
         >
-          <MenuItem onClick={() => navigate("/")}>
-            <ListItemIcon>
-              <HomeIcon color="primary" />
-            </ListItemIcon>
-            <ListItemText>Go to home page</ListItemText>
-          </MenuItem>
-          <Divider />
-          <MenuItem onClick={handleLogout}>
-            <ListItemIcon>
-              <LogoutIcon color="error" />
-            </ListItemIcon>
-            <ListItemText>Đăng xuất</ListItemText>
-          </MenuItem>
+          {[
+            <MenuItem key="home" onClick={() => navigate("/")}>
+              <ListItemIcon>
+                <HomeIcon color="primary" />
+              </ListItemIcon>
+              <ListItemText>Go to home page</ListItemText>
+            </MenuItem>,
+            <Divider key="divider" />,
+            <MenuItem key="logout" onClick={handleLogout}>
+              <ListItemIcon>
+                <LogoutIcon color="error" />
+              </ListItemIcon>
+              <ListItemText>Đăng xuất</ListItemText>
+            </MenuItem>
+          ]}
         </Menu>
       </>
     );
@@ -129,23 +131,28 @@ const UserMenu: React.FC<UserMenuProps> = ({ onLogout, isAdminPage }) => {
         anchorOrigin={{ vertical: "bottom", horizontal: "right" }}
         transformOrigin={{ vertical: "top", horizontal: "right" }}
       >
-        {roleIsAdmin && (
-          <>
-            <MenuItem onClick={() => navigate("/admin")}> 
-              <ListItemIcon>
-                <AdminPanelSettingsIcon color="primary" />
-              </ListItemIcon>
-              <ListItemText>Admin</ListItemText>
-            </MenuItem>
-            <Divider />
-          </>
-        )}
-        <MenuItem onClick={handleLogout}>
-          <ListItemIcon>
-            <LogoutIcon color="error" />
-          </ListItemIcon>
-          <ListItemText>Đăng xuất</ListItemText>
-        </MenuItem>
+        {roleIsAdmin ? [
+          <MenuItem key="admin" onClick={() => navigate("/admin")}>
+            <ListItemIcon>
+              <AdminPanelSettingsIcon color="primary" />
+            </ListItemIcon>
+            <ListItemText>Admin</ListItemText>
+          </MenuItem>,
+          <Divider key="divider" />,
+          <MenuItem key="logout" onClick={handleLogout}>
+            <ListItemIcon>
+              <LogoutIcon color="error" />
+            </ListItemIcon>
+            <ListItemText>Đăng xuất</ListItemText>
+          </MenuItem>
+        ] : [
+          <MenuItem key="logout" onClick={handleLogout}>
+            <ListItemIcon>
+              <LogoutIcon color="error" />
+            </ListItemIcon>
+            <ListItemText>Đăng xuất</ListItemText>
+          </MenuItem>
+        ]}
       </Menu>
     </>
   );

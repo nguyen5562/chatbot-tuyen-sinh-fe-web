@@ -60,10 +60,7 @@ const LoginPage: React.FC = () => {
         login(response.data?.user.fullname, response.data?.user.role, response.data?.access_token, response.data?.user.id);
         navigate('/');
 
-        console.log(localStorage.getItem("user"));
-        console.log(localStorage.getItem("role"));
-        console.log(localStorage.getItem("token"));
-        console.log(localStorage.getItem("userId"));
+        console.log("Login successful");
       } else {
         showToast(response.message || 'Đăng nhập thất bại. Vui lòng thử lại!', 'error');
       }

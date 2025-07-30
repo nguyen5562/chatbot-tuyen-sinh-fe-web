@@ -37,6 +37,7 @@ const ChatPage: React.FC = () => {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [showInputAtBottom, setShowInputAtBottom] = useState(false);
+  const [isLoadingChats, setIsLoadingChats] = useState(false);
 
   // Thêm hằng cho id cuộc hội thoại mới
   const NEW_CHAT_ID = 'new';
@@ -44,12 +45,16 @@ const ChatPage: React.FC = () => {
   // useEffect lấy danh sách chat khi đăng nhập
   useEffect(() => {
     if (loggedIn && userId) {
+      setIsLoadingChats(true);
       chatApi.getChatByUser(userId).then((res) => {
         if (res.status === 'Success' && res.data) {
           // Thêm 'Cuộc hội thoại mới' vào đầu danh sách
           setChats([{ id: NEW_CHAT_ID, title: 'Cuộc hội thoại mới', messages: [] }, ...res.data]);
           setCurrentChatId(NEW_CHAT_ID); // Luôn chọn cuộc hội thoại mới khi vào
         }
+        setIsLoadingChats(false);
+      }).catch(() => {
+        setIsLoadingChats(false);
       });
     }
   }, [loggedIn, userId, setChats, setCurrentChatId]);
@@ -69,18 +74,29 @@ const ChatPage: React.FC = () => {
       setCurrentChatId(NEW_CHAT_ID);
       setShowInputAtBottom(false);
     } else {
-      // Guest logic giữ nguyên
-      const newId = 'g' + Date.now().toString();
-      setGuestChats(prev => [
-        { id: newId, title: 'Cuộc hội thoại mới', messages: [] },
-        ...prev,
-      ]);
-      setGuestCurrentChatId(newId);
+      // Guest logic - kiểm tra xem đã có 'Cuộc hội thoại mới' chưa
+      const hasNewGuestChat = guestChats.some(chat => chat.title === 'Cuộc hội thoại mới');
+      if (!hasNewGuestChat) {
+        // Chỉ tạo 'Cuộc hội thoại mới' nếu chưa có
+        const newId = 'g' + Date.now().toString();
+        setGuestChats(prev => [
+          { id: newId, title: 'Cuộc hội thoại mới', messages: [] },
+          ...prev,
+        ]);
+        setGuestCurrentChatId(newId);
+      } else {
+        // Nếu đã có, chọn cuộc hội thoại mới đầu tiên
+        const newChat = guestChats.find(chat => chat.title === 'Cuộc hội thoại mới');
+        if (newChat) {
+          setGuestCurrentChatId(newChat.id);
+        }
+      }
       setShowInputAtBottom(false);
     }
   };
 
   // Lấy messages của chat đang chọn
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   let currentMessages: Message[] = [];
   if (loggedIn && chats && currentChatId) {
     if (currentChatId === NEW_CHAT_ID) {
@@ -219,6 +235,7 @@ const ChatPage: React.FC = () => {
     if (currentMessages.length === 0) {
       setShowInputAtBottom(false);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loggedIn ? currentChatId : guestCurrentChatId]);
 
   // Reset guest chat state khi logout
@@ -235,8 +252,17 @@ const ChatPage: React.FC = () => {
   const chatBg = 'linear-gradient(135deg, #e3f0ff 0%, #b3d1fa 100%)';
   const sidebarWidth = 288;
 
-  console.log("chats", chats);
-  console.log(currentChatId === NEW_CHAT_ID)
+  // Hiển thị loading overlay khi đang tải chat
+  if (loggedIn && isLoadingChats) {
+    return (
+      <Box sx={{ display: 'flex', flex: 1, minHeight: 0, alignItems: 'center', justifyContent: 'center', background: chatBg }}>
+        <div className="flex flex-col items-center justify-center">
+          <FontAwesomeIcon icon={faSpinner} spin className="text-4xl text-blue-600 mb-4" />
+          <div className="text-xl font-semibold text-gray-700">Đang tải cuộc hội thoại...</div>
+        </div>
+      </Box>
+    );
+  }
 
   return (
     <Box sx={{ display: 'flex', flex: 1, minHeight: 0 }}>
@@ -257,7 +283,7 @@ const ChatPage: React.FC = () => {
           <div style={{ position: 'absolute', inset: 0, zIndex: 0, background: chatBg }} />
           {/* New chat UI ở giữa màn hình */}
           <div
-            className={`absolute left-0 right-0 top-0 bottom-0 flex flex-col items-center justify-center transition-all duration-700 z-10
+            className={`absolute left-0 right-0 top-0 bottom-0 flex flex-col items-center justify-center transition-all duration-700 z-10 -mt-40
             ${isNewChat ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none translate-y-32'}`}
           >
             <div className="text-3xl md:text-4xl font-extrabold text-black mb-10 mt-10 text-center drop-shadow-xl">Bạn muốn hỏi gì?</div>
