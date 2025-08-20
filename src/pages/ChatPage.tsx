@@ -177,12 +177,16 @@ const ChatPage: React.FC = () => {
         setLoading(false);
       }
     } else if (guestCurrentChatId) {
-      // Guest logic giữ nguyên
+      // Guest logic - cập nhật title khi gửi tin nhắn đầu tiên
+      const currentChat = guestChats.find(chat => chat.id === guestCurrentChatId);
+      const isFirstMessage = currentChat?.messages.length === 0;
+      
       setGuestChats((prev) =>
         prev.map((chat) =>
           chat.id === guestCurrentChatId
             ? {
                 ...chat,
+                title: isFirstMessage ? msg : chat.title, // Đổi title thành tin nhắn đầu tiên
                 messages: [
                   ...chat.messages,
                   { id: Date.now().toString(), role: 'user', content: msg },
