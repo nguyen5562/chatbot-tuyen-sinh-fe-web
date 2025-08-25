@@ -1,5 +1,6 @@
 import React, { useState, useCallback } from 'react';
 import type { ReactNode } from 'react';
+import Box from '@mui/material/Box';
 import Toast from './Toast';
 import { ToastContext } from './toastContext';
 import type { ToastType, ToastItem } from './toastContext';
@@ -12,7 +13,7 @@ const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
     setToasts((prev) => [...prev, { id, message, type }]);
     setTimeout(() => {
       setToasts((prev) => prev.filter((t) => t.id !== id));
-    }, 2500);
+    }, 4000);
   }, []);
 
   const handleClose = (id: string) => {
@@ -22,13 +23,50 @@ const ToastProvider: React.FC<{ children: ReactNode }> = ({ children }) => {
   return (
     <ToastContext.Provider value={{ showToast }}>
       {children}
-      <div className="fixed top-6 right-6 z-[9999] flex flex-col gap-3 items-end">
-        {toasts.map((toast) => (
-          <Toast key={toast.id} {...toast} onClose={() => handleClose(toast.id)} />
+      
+      {/* Toast Container */}
+      <Box
+        sx={{
+          position: 'fixed',
+          top: 24,
+          right: 24,
+          zIndex: 9999,
+          display: 'flex',
+          flexDirection: 'column',
+          gap: 2,
+          alignItems: 'flex-end',
+          pointerEvents: 'none'
+        }}
+      >
+        {toasts.map((toast, index) => (
+          <Box
+            key={toast.id}
+            sx={{
+              pointerEvents: 'auto',
+              animation: 'slideInFromRight 0.4s ease-out',
+              animationDelay: `${index * 100}ms`,
+              animationFillMode: 'both',
+              '@keyframes slideInFromRight': {
+                from: {
+                  opacity: 0,
+                  transform: 'translateX(100px)'
+                },
+                to: {
+                  opacity: 1,
+                  transform: 'translateX(0)'
+                }
+              }
+            }}
+          >
+            <Toast 
+              {...toast} 
+              onClose={() => handleClose(toast.id)} 
+            />
+          </Box>
         ))}
-      </div>
+      </Box>
     </ToastContext.Provider>
   );
 };
 
-export default ToastProvider; 
+export default ToastProvider;
