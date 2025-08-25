@@ -379,7 +379,7 @@ const ChatPage: React.FC = () => {
             <div
               ref={chatRef}
               className="flex-1 overflow-y-auto px-8 py-8 space-y-6 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent"
-              style={{ maxHeight: 'calc(100vh - 140px)', minHeight: 0 }}
+              style={{ maxHeight: 'calc(100vh - 180px)', minHeight: 0 }}
             >
               {currentMessages.map((msg, idx) =>
                 msg.content === '__loading__' ? (
@@ -392,7 +392,7 @@ const ChatPage: React.FC = () => {
                 )
               )}
             </div>
-            <div className="px-8 pb-8 pt-4">
+            <div className="px-8 pb-12 pt-4">
               <ChatInput
                 value={input}
                 onChange={setInput}

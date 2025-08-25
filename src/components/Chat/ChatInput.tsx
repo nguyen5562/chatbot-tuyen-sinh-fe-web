@@ -57,6 +57,12 @@ const ChatInput: React.FC<Props> = ({ value, onChange, onSend, disabled }) => {
           placeholder="Nhập câu hỏi của bạn..."
           value={value}
           onChange={e => onChange(e.target.value)}
+          onKeyDown={(e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+              e.preventDefault();
+              if (!disabled && value.trim()) onSend(value);
+            }
+          }}
           onFocus={() => setFocus(true)}
           onBlur={() => setFocus(false)}
           InputProps={{

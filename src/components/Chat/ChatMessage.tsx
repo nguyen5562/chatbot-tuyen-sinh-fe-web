@@ -30,7 +30,6 @@ const ChatMessage: React.FC<Props> = ({ message }) => {
       {!isUser && (
         <Avatar
           sx={{
-            bgcolor: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
             background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
             color: 'white',
             mr: 3,
@@ -80,9 +79,7 @@ const ChatMessage: React.FC<Props> = ({ message }) => {
             height: 0,
             border: '12px solid transparent',
             ...(isUser ? {
-              right: -12,
-              top: 20,
-              borderLeftColor: '#667eea'
+              display: 'none'
             } : {
               left: -12,
               top: 20,
