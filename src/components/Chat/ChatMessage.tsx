@@ -54,9 +54,7 @@ const ChatMessage: React.FC<Props> = ({ message }) => {
           fontWeight: 500,
           lineHeight: 1.6,
           position: 'relative',
-          background: isUser
-            ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-            : 'rgba(255, 255, 255, 0.95)',
+          background: 'rgba(255, 255, 255, 0.95)',
           backdropFilter: 'blur(20px)',
           color: isUser ? 'white' : 'text.primary',
           border: isUser ? 'none' : '1px solid rgba(255, 255, 255, 0.2)',
@@ -92,7 +90,7 @@ const ChatMessage: React.FC<Props> = ({ message }) => {
           variant="body1"
           sx={{
             whiteSpace: 'pre-line',
-            color: isUser ? 'white' : 'text.primary',
+            color: 'text.primary',
             fontWeight: 500,
             fontSize: 16,
             lineHeight: 1.6
