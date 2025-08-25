@@ -180,19 +180,19 @@ const ChatPage: React.FC = () => {
       // Guest logic - cập nhật title khi gửi tin nhắn đầu tiên
       const currentChat = guestChats.find(chat => chat.id === guestCurrentChatId);
       const isFirstMessage = currentChat?.messages.length === 0;
-      
+
       setGuestChats((prev) =>
         prev.map((chat) =>
           chat.id === guestCurrentChatId
             ? {
-                ...chat,
-                title: isFirstMessage ? msg : chat.title, // Đổi title thành tin nhắn đầu tiên
-                messages: [
-                  ...chat.messages,
-                  { id: Date.now().toString(), role: 'user', content: msg },
-                  { id: (Date.now() + 1).toString(), role: 'assistant', content: '__loading__' },
-                ],
-              }
+              ...chat,
+              title: isFirstMessage ? msg : chat.title, // Đổi title thành tin nhắn đầu tiên
+              messages: [
+                ...chat.messages,
+                { id: Date.now().toString(), role: 'user', content: msg },
+                { id: (Date.now() + 1).toString(), role: 'assistant', content: '__loading__' },
+              ],
+            }
             : chat
         )
       );
@@ -204,13 +204,13 @@ const ChatPage: React.FC = () => {
           prev.map((chat) =>
             chat.id === guestCurrentChatId
               ? {
-                  ...chat,
-                  messages: chat.messages.map((m) =>
-                    m.content === '__loading__'
-                      ? { ...m, content: response }
-                      : m
-                  ),
-                }
+                ...chat,
+                messages: chat.messages.map((m) =>
+                  m.content === '__loading__'
+                    ? { ...m, content: response }
+                    : m
+                ),
+              }
               : chat
           )
         );
@@ -219,13 +219,13 @@ const ChatPage: React.FC = () => {
           prev.map((chat) =>
             chat.id === guestCurrentChatId
               ? {
-                  ...chat,
-                  messages: chat.messages.map((m) =>
-                    m.content === '__loading__'
-                      ? { ...m, content: 'Đã có lỗi xảy ra.' }
-                      : m
-                  ),
-                }
+                ...chat,
+                messages: chat.messages.map((m) =>
+                  m.content === '__loading__'
+                    ? { ...m, content: 'Đã có lỗi xảy ra.' }
+                    : m
+                ),
+              }
               : chat
           )
         );
@@ -239,7 +239,7 @@ const ChatPage: React.FC = () => {
     if (currentMessages.length === 0) {
       setShowInputAtBottom(false);
     }
-  // eslint-disable-next-line react-hooks/exhaustive-deps
+    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [loggedIn ? currentChatId : guestCurrentChatId]);
 
   // Reset guest chat state khi logout
@@ -253,25 +253,42 @@ const ChatPage: React.FC = () => {
 
   // Giao diện new chat nếu chưa có tin nhắn
   const isNewChat = currentMessages.length === 0 && !showInputAtBottom;
-  const chatBg = 'linear-gradient(135deg, #e3f0ff 0%, #b3d1fa 100%)';
-  const sidebarWidth = 288;
+  const sidebarWidth = 320;
 
   // Hiển thị loading overlay khi đang tải chat
   if (loggedIn && isLoadingChats) {
     return (
-      <Box sx={{ display: 'flex', flex: 1, minHeight: 0, alignItems: 'center', justifyContent: 'center', background: chatBg }}>
-        <div className="flex flex-col items-center justify-center">
-          <FontAwesomeIcon icon={faSpinner} spin className="text-4xl text-blue-600 mb-4" />
-          <div className="text-xl font-semibold text-gray-700">Đang tải cuộc hội thoại...</div>
+      <Box sx={{
+        display: 'flex',
+        flex: 1,
+        minHeight: 0,
+        alignItems: 'center',
+        justifyContent: 'center',
+        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+      }}>
+        <div className="flex flex-col items-center justify-center p-8 bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl">
+          <FontAwesomeIcon icon={faSpinner} spin className="text-6xl text-white mb-6" />
+          <div className="text-2xl font-bold text-white">Đang tải cuộc hội thoại...</div>
         </div>
       </Box>
     );
   }
 
   return (
-    <Box sx={{ display: 'flex', flex: 1, minHeight: 0 }}>
+    <Box sx={{ display: 'flex', flex: 1, minHeight: 0, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
       {/* Sidebar ChatHistory */}
-      <Box sx={{ width: sidebarWidth, bgcolor: 'white', borderRight: 1, borderColor: 'divider', p: 0, zIndex: 10, minHeight: 0, height: '100vh', overflowY: 'auto' }}>
+      <Box sx={{
+        width: sidebarWidth,
+        background: 'linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.9) 100%)',
+        backdropFilter: 'blur(20px)',
+        borderRight: '1px solid rgba(255,255,255,0.2)',
+        p: 3,
+        zIndex: 10,
+        minHeight: 0,
+        height: '100vh',
+        overflowY: 'auto',
+        boxShadow: '4px 0 24px rgba(0,0,0,0.1)'
+      }}>
         <ChatHistory
           chats={loggedIn ? chats : guestChats}
           currentChatId={loggedIn ? currentChatId : guestCurrentChatId}
@@ -280,30 +297,37 @@ const ChatPage: React.FC = () => {
           loggedIn={loggedIn}
         />
       </Box>
+
       {/* Main chat area */}
-      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, height: '100vh' }}>
+      <Box sx={{ flex: 1, display: 'flex', flexDirection: 'column', minHeight: 0, height: '100vh', position: 'relative' }}>
         <div className="flex flex-col h-full min-h-0 w-full relative overflow-hidden">
-          {/* Nền gradient cố định */}
-          <div style={{ position: 'absolute', inset: 0, zIndex: 0, background: chatBg }} />
           {/* New chat UI ở giữa màn hình */}
           <div
-            className={`absolute left-0 right-0 top-0 bottom-0 flex flex-col items-center justify-center transition-all duration-700 z-10 -mt-40
+            className={`absolute left-0 right-0 top-0 bottom-0 flex flex-col items-center justify-center transition-all duration-700 z-10
             ${isNewChat ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none translate-y-32'}`}
           >
-            <div className="text-3xl md:text-4xl font-extrabold text-black mb-10 mt-10 text-center drop-shadow-xl">Bạn muốn hỏi gì?</div>
-            <div className="w-full flex justify-center">
+            <div className="text-center mb-12">
+              <div className="text-5xl md:text-6xl font-black text-white mb-4 drop-shadow-2xl">
+                Xin chào! 👋
+              </div>
+              <div className="text-xl md:text-2xl text-white/80 font-medium max-w-2xl mx-auto leading-relaxed">
+                Tôi là ChatBot MTA, sẵn sàng hỗ trợ bạn với mọi câu hỏi về tuyển sinh
+              </div>
+            </div>
+
+            <div className="w-full flex justify-center px-8">
               <form
-                className="relative w-full max-w-2xl flex items-center"
+                className="relative w-full max-w-3xl flex items-center gap-4"
                 onSubmit={e => {
                   e.preventDefault();
                   if (!loading) handleSend(input);
                 }}
               >
-                <div className="flex-1 flex items-center bg-white rounded-full shadow-2xl px-8 py-4 text-lg w-full">
+                <div className="flex-1 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20">
                   <input
-                    className="flex-1 bg-transparent border-none outline-none text-gray-900 placeholder-gray-400 text-lg"
+                    className="w-full px-8 py-6 bg-transparent border-none outline-none text-gray-800 placeholder-gray-500 text-lg font-medium rounded-2xl"
                     type="text"
-                    placeholder="Nhập tin nhắn..."
+                    placeholder="Hãy đặt câu hỏi của bạn..."
                     value={input}
                     onChange={e => setInput(e.target.value)}
                     disabled={loading}
@@ -311,31 +335,64 @@ const ChatPage: React.FC = () => {
                 </div>
                 <button
                   type="submit"
-                  className="ml-4 bg-blue-600 text-white w-12 h-12 rounded-full flex items-center justify-center text-2xl shadow-lg hover:bg-blue-700 transition-all"
-                  disabled={loading}
+                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white w-16 h-16 rounded-2xl flex items-center justify-center text-xl shadow-2xl hover:from-blue-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  disabled={loading || !input.trim()}
                 >
-                  <FontAwesomeIcon icon={faPaperPlane} />
+                  {loading ? (
+                    <FontAwesomeIcon icon={faSpinner} spin />
+                  ) : (
+                    <FontAwesomeIcon icon={faPaperPlane} />
+                  )}
                 </button>
               </form>
             </div>
+
+            {/* Gợi ý câu hỏi */}
+            <div className="mt-12 max-w-4xl mx-auto px-8">
+              <div className="text-white/70 text-lg font-medium mb-6 text-center">
+                Một số câu hỏi phổ biến:
+              </div>
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {[
+                  "Điều kiện tuyển sinh của MTA là gì?",
+                  "Học phí của các ngành học như thế nào?",
+                  "Có những ngành nào tại MTA?",
+                  "Quy trình đăng ký xét tuyển ra sao?"
+                ].map((question, idx) => (
+                  <button
+                    key={idx}
+                    onClick={() => setInput(question)}
+                    className="bg-white/10 backdrop-blur-md text-white px-6 py-4 rounded-xl text-left hover:bg-white/20 transition-all duration-300 border border-white/20 hover:border-white/40 transform hover:scale-105"
+                  >
+                    <span className="text-white/60 mr-2">💡</span>
+                    {question}
+                  </button>
+                ))}
+              </div>
+            </div>
           </div>
+
           {/* Chat UI bình thường */}
           <div
             className={`flex flex-col h-full min-h-0 w-full transition-all duration-700 z-10 ${isNewChat ? 'opacity-0 pointer-events-none translate-y-[-32px]' : 'opacity-100 pointer-events-auto'}`}
           >
-            <div ref={chatRef} className="flex-1 overflow-y-auto px-4 py-8 space-y-6 scrollbar-thin scrollbar-thumb-blue-200 scrollbar-track-transparent bg-transparent" style={{ maxHeight: 'calc(100vh - 120px)', minHeight: 0 }}>
+            <div
+              ref={chatRef}
+              className="flex-1 overflow-y-auto px-8 py-8 space-y-6 scrollbar-thin scrollbar-thumb-white/20 scrollbar-track-transparent"
+              style={{ maxHeight: 'calc(100vh - 140px)', minHeight: 0 }}
+            >
               {currentMessages.map((msg, idx) =>
                 msg.content === '__loading__' ? (
-                  <div key={msg.id + idx} className="flex items-center gap-2 text-gray-500 animate-pulse">
-                    <FontAwesomeIcon icon={faSpinner} spin className="mr-2" />
-                    <span>Đang trả lời...</span>
+                  <div key={msg.id + idx} className="flex items-center gap-3 text-white/80 animate-pulse bg-white/10 backdrop-blur-md rounded-2xl px-6 py-4 max-w-md">
+                    <FontAwesomeIcon icon={faSpinner} spin className="text-xl" />
+                    <span className="font-medium">Đang suy nghĩ...</span>
                   </div>
                 ) : (
                   <ChatMessage key={msg.id} message={{ ...msg, role: msg.role as 'user' | 'assistant' }} />
                 )
               )}
             </div>
-            <div className="px-4 pb-20 pt-2 bg-gradient-to-t transparent">
+            <div className="px-8 pb-8 pt-4">
               <ChatInput
                 value={input}
                 onChange={setInput}

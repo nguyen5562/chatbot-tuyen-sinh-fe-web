@@ -18,34 +18,105 @@ type Props = {
 
 const ChatMessage: React.FC<Props> = ({ message }) => {
   const isUser = message.role === 'user';
+
   return (
-    <Box display="flex" justifyContent={isUser ? 'flex-end' : 'flex-start'} alignItems="flex-end" className="animate-fadeIn" mb={2}>
+    <Box
+      display="flex"
+      justifyContent={isUser ? 'flex-end' : 'flex-start'}
+      alignItems="flex-start"
+      mb={4}
+      className="animate-in slide-in-from-bottom-4 fade-in duration-500"
+    >
       {!isUser && (
-        <Avatar sx={{ bgcolor: 'grey.200', color: 'primary.main', mr: 2, width: 40, height: 40 }}>
+        <Avatar
+          sx={{
+            bgcolor: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+            color: 'white',
+            mr: 3,
+            width: 48,
+            height: 48,
+            boxShadow: '0 8px 32px rgba(102, 126, 234, 0.3)',
+            border: '3px solid rgba(255, 255, 255, 0.2)'
+          }}
+        >
           <SmartToyIcon fontSize="large" />
         </Avatar>
       )}
+
       <Paper
-        elevation={isUser ? 6 : 2}
+        elevation={0}
         sx={{
-          maxWidth: 480,
-          px: 3,
-          py: 2,
-          borderRadius: 6,
-          fontSize: 18,
+          maxWidth: 560,
+          px: 4,
+          py: 3,
+          borderRadius: 4,
+          fontSize: 16,
           fontWeight: 500,
-          bgcolor: isUser ? 'primary.main' : 'background.paper',
+          lineHeight: 1.6,
+          position: 'relative',
+          background: isUser
+            ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+            : 'rgba(255, 255, 255, 0.95)',
+          backdropFilter: 'blur(20px)',
           color: isUser ? 'white' : 'text.primary',
-          borderBottomRightRadius: isUser ? 12 : 24,
-          borderBottomLeftRadius: !isUser ? 12 : 24,
-          border: !isUser ? '1px solid #90caf9' : undefined,
-          boxShadow: isUser ? 6 : 2,
+          border: isUser ? 'none' : '1px solid rgba(255, 255, 255, 0.2)',
+          boxShadow: isUser
+            ? '0 12px 40px rgba(102, 126, 234, 0.4)'
+            : '0 8px 32px rgba(0, 0, 0, 0.1)',
+          transition: 'all 0.3s ease',
+          transform: 'translateY(0)',
+          '&:hover': {
+            transform: 'translateY(-2px)',
+            boxShadow: isUser
+              ? '0 16px 48px rgba(102, 126, 234, 0.5)'
+              : '0 12px 40px rgba(0, 0, 0, 0.15)'
+          },
+          // Custom tail for speech bubble effect
+          '&::before': {
+            content: '""',
+            position: 'absolute',
+            width: 0,
+            height: 0,
+            border: '12px solid transparent',
+            ...(isUser ? {
+              right: -12,
+              top: 20,
+              borderLeftColor: '#667eea'
+            } : {
+              left: -12,
+              top: 20,
+              borderRightColor: 'rgba(255, 255, 255, 0.95)'
+            })
+          }
         }}
       >
-        <Typography variant="body1" sx={{ whiteSpace: 'pre-line' }}>{message.content}</Typography>
+        <Typography
+          variant="body1"
+          sx={{
+            whiteSpace: 'pre-line',
+            color: isUser ? 'white' : 'text.primary',
+            fontWeight: 500,
+            fontSize: 16,
+            lineHeight: 1.6
+          }}
+        >
+          {message.content}
+        </Typography>
       </Paper>
+
       {isUser && (
-        <Avatar sx={{ bgcolor: 'primary.light', color: 'white', ml: 2, width: 40, height: 40 }}>
+        <Avatar
+          sx={{
+            background: 'linear-gradient(135deg, #ff6b6b 0%, #ffa726 100%)',
+            color: 'white',
+            ml: 3,
+            width: 48,
+            height: 48,
+            boxShadow: '0 8px 32px rgba(255, 107, 107, 0.3)',
+            border: '3px solid rgba(255, 255, 255, 0.2)'
+          }}
+        >
           <PersonIcon fontSize="large" />
         </Avatar>
       )}
