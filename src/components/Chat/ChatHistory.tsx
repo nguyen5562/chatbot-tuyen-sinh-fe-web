@@ -29,7 +29,7 @@ const ChatHistory: React.FC<Props> = ({ chats, currentChatId, onSelect, onNewCha
         <Typography
           variant="h4"
           sx={{
-            fontWeight: 900,
+            fontWeight: 700,
             background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
             WebkitBackgroundClip: 'text',
             WebkitTextFillColor: 'transparent',

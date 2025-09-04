@@ -140,10 +140,19 @@ const ChatPage: React.FC = () => {
             setInput('');
             setLoading(true);
             try {
-              const response = await modelApi.getResponse(msg);
+              const response = await modelApi.getStreamingResponsePromise(
+                msg,
+                (token) => {
+                  // Cập nhật message theo từng token (append)
+                  if (res.data) {
+                    updateAssistantMessage(res.data.id, token, true);
+                  }
+                }
+              );
               if (response) {
                 await chatApi.sendMessage(res.data.id, { content: msg, role: 'user' });
                 await chatApi.sendMessage(res.data.id, { content: response, role: 'assistant' });
+                // Đảm bảo message cuối cùng được cập nhật đầy đủ
                 updateAssistantMessage(res.data.id, response);
               }
             } catch {
@@ -165,10 +174,17 @@ const ChatPage: React.FC = () => {
         setInput('');
         setLoading(true);
         try {
-          const response = await modelApi.getResponse(msg);
+          const response = await modelApi.getStreamingResponsePromise(
+            msg,
+            (token) => {
+              // Cập nhật message theo từng token (append)
+              updateAssistantMessage(currentChatId, token, true);
+            }
+          );
           if (response) {
             await chatApi.sendMessage(currentChatId, { content: msg, role: 'user' });
             await chatApi.sendMessage(currentChatId, { content: response, role: 'assistant' });
+            // Đảm bảo message cuối cùng được cập nhật đầy đủ
             updateAssistantMessage(currentChatId, response);
           }
         } catch {
@@ -199,35 +215,82 @@ const ChatPage: React.FC = () => {
       setInput('');
       setLoading(true);
       try {
-        const response = await modelApi.getResponse(msg);
+        let streamingContent = '';
+        const response = await modelApi.getStreamingResponsePromise(
+          msg,
+          (token) => {
+            // Cập nhật message theo từng token cho guest (append)
+            streamingContent += token;
+            setGuestChats((prev) =>
+              prev.map((chat) => {
+                if (chat.id !== guestCurrentChatId) return chat;
+
+                // Chỉ cập nhật duy nhất message assistant cuối cùng
+                let lastAssistantIndex = -1;
+                for (let i = chat.messages.length - 1; i >= 0; i -= 1) {
+                  if (chat.messages[i].role === 'assistant') {
+                    lastAssistantIndex = i;
+                    break;
+                  }
+                }
+
+                if (lastAssistantIndex === -1) return chat;
+
+                const updatedMessages = chat.messages.map((m, idx) => {
+                  if (idx !== lastAssistantIndex) return m;
+                  return { ...m, content: streamingContent };
+                });
+
+                return { ...chat, messages: updatedMessages };
+              })
+            );
+          }
+        );
+        // Đảm bảo message cuối cùng được cập nhật đầy đủ
         setGuestChats((prev) =>
-          prev.map((chat) =>
-            chat.id === guestCurrentChatId
-              ? {
-                ...chat,
-                messages: chat.messages.map((m) =>
-                  m.content === '__loading__'
-                    ? { ...m, content: response }
-                    : m
-                ),
+          prev.map((chat) => {
+            if (chat.id !== guestCurrentChatId) return chat;
+
+            let lastAssistantIndex = -1;
+            for (let i = chat.messages.length - 1; i >= 0; i -= 1) {
+              if (chat.messages[i].role === 'assistant') {
+                lastAssistantIndex = i;
+                break;
               }
-              : chat
-          )
+            }
+
+            if (lastAssistantIndex === -1) return chat;
+
+            const updatedMessages = chat.messages.map((m, idx) =>
+              idx === lastAssistantIndex ? { ...m, content: response } : m
+            );
+
+            return { ...chat, messages: updatedMessages };
+          })
         );
       } catch {
         setGuestChats((prev) =>
-          prev.map((chat) =>
-            chat.id === guestCurrentChatId
-              ? {
-                ...chat,
-                messages: chat.messages.map((m) =>
-                  m.content === '__loading__'
-                    ? { ...m, content: 'Đã có lỗi xảy ra.' }
-                    : m
-                ),
+          prev.map((chat) => {
+            if (chat.id !== guestCurrentChatId) return chat;
+
+            let lastAssistantIndex = -1;
+            for (let i = chat.messages.length - 1; i >= 0; i -= 1) {
+              if (chat.messages[i].role === 'assistant') {
+                lastAssistantIndex = i;
+                break;
               }
-              : chat
-          )
+            }
+
+            if (lastAssistantIndex === -1) return chat;
+
+            const updatedMessages = chat.messages.map((m, idx) =>
+              idx === lastAssistantIndex && m.content === '__loading__'
+                ? { ...m, content: 'Đã có lỗi xảy ra.' }
+                : m
+            );
+
+            return { ...chat, messages: updatedMessages };
+          })
         );
       }
       setLoading(false);
