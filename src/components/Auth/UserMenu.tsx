@@ -58,10 +58,10 @@ const UserMenu: React.FC<UserMenuProps> = ({ onLogout, isAdminPage }) => {
         <Tooltip 
           title={
             <Box sx={{ p: 1 }}>
-              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'white' }}>
+              <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#2d3748' }}>
                 {username}
               </Typography>
-              <Typography variant="caption" sx={{ opacity: 0.9, color: 'white' }}>
+              <Typography variant="caption" sx={{ opacity: 0.9, color: '#718096' }}>
                 Quản trị viên
               </Typography>
             </Box>
@@ -72,22 +72,22 @@ const UserMenu: React.FC<UserMenuProps> = ({ onLogout, isAdminPage }) => {
             onClick={handleMenu}
             size="large"
             sx={{ 
-              color: "white", 
+              color: "#2d3748", 
               p: 0,
               transition: 'all 0.3s ease',
               '&:hover': {
                 transform: 'scale(1.1)',
-                boxShadow: '0 8px 32px rgba(255, 255, 255, 0.2)'
+                boxShadow: '0 8px 32px rgba(102, 126, 234, 0.3)'
               }
             }}
           >
             <Avatar sx={{ 
-              bgcolor: 'rgba(255, 255, 255, 0.2)', 
+              bgcolor: '#667eea', 
               width: 48, 
               height: 48,
-              backdropFilter: 'blur(10px)',
               border: '2px solid rgba(255, 255, 255, 0.3)',
-              transition: 'all 0.3s ease'
+              transition: 'all 0.3s ease',
+              boxShadow: '0 4px 16px rgba(102, 126, 234, 0.3)'
             }}>
               <AdminPanelSettingsIcon sx={{ color: 'white', fontSize: 24 }} />
             </Avatar>
@@ -182,16 +182,15 @@ const UserMenu: React.FC<UserMenuProps> = ({ onLogout, isAdminPage }) => {
           fontSize: 16,
           px: 3,
           py: 1.5,
-          border: '2px solid rgba(255, 255, 255, 0.3)',
-          color: 'white',
-          backdropFilter: 'blur(10px)',
-          background: 'rgba(255, 255, 255, 0.1)',
+          border: '2px solid #667eea',
+          color: '#667eea',
+          background: 'rgba(102, 126, 234, 0.05)',
           transition: 'all 0.3s ease',
           '&:hover': {
-            border: '2px solid rgba(255, 255, 255, 0.5)',
-            background: 'rgba(255, 255, 255, 0.2)',
+            border: '2px solid #5a67d8',
+            background: 'rgba(102, 126, 234, 0.1)',
             transform: 'translateY(-2px)',
-            boxShadow: '0 8px 32px rgba(255, 255, 255, 0.2)'
+            boxShadow: '0 8px 32px rgba(102, 126, 234, 0.2)'
           }
         }}
       >
@@ -206,10 +205,10 @@ const UserMenu: React.FC<UserMenuProps> = ({ onLogout, isAdminPage }) => {
       <Tooltip 
         title={
           <Box sx={{ p: 1 }}>
-            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: 'white' }}>
+            <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#2d3748' }}>
               {username}
             </Typography>
-            <Typography variant="caption" sx={{ opacity: 0.9, color: 'white' }}>
+            <Typography variant="caption" sx={{ opacity: 0.9, color: '#718096' }}>
               {roleIsAdmin ? 'Quản trị viên' : 'Người dùng'}
             </Typography>
           </Box>
@@ -220,19 +219,17 @@ const UserMenu: React.FC<UserMenuProps> = ({ onLogout, isAdminPage }) => {
           onClick={handleMenu}
           size="large"
           sx={{ 
-            color: "white", 
+            color: "#2d3748", 
             p: 0,
             transition: 'all 0.3s ease',
             '&:hover': {
               transform: 'scale(1.1)',
-              boxShadow: '0 8px 32px rgba(255, 255, 255, 0.2)'
+              boxShadow: '0 8px 32px rgba(102, 126, 234, 0.3)'
             }
           }}
         >
           <Avatar sx={{ 
-            background: roleIsAdmin 
-              ? 'linear-gradient(135deg, #ff6b6b 0%, #ffa726 100%)' 
-              : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
+            background: '#667eea', 
             width: 48, 
             height: 48,
             color: 'white',

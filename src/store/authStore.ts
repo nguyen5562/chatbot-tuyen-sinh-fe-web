@@ -1,4 +1,5 @@
 import { create } from "zustand";
+import { persist } from "zustand/middleware";
 
 interface AuthState {
   loggedIn: boolean;
@@ -10,30 +11,45 @@ interface AuthState {
   logout: () => void;
 }
 
-export const useAuthStore = create<AuthState>((set) => ({
-  loggedIn: false,
-  user: null,
-  userId: null,
-  role: null,
-  token: null,
-  
-  login: (fullname: any, role: any, token: any, userId: any) => {
-    set({ 
-      loggedIn: true, 
-      user: fullname, 
-      userId: userId,
-      role: role,
-      token: token
-    });
-  },
-  
-  logout: () => {
-    set({ 
-      loggedIn: false, 
-      user: null, 
+export const useAuthStore = create<AuthState>()(
+  persist(
+    (set) => ({
+      loggedIn: false,
+      user: null,
       userId: null,
       role: null,
-      token: null
-    });
-  }
-}));
+      token: null,
+      
+      login: (fullname: any, role: any, token: any, userId: any) => {
+        set({ 
+          loggedIn: true, 
+          user: fullname, 
+          userId: userId,
+          role: role,
+          token: token
+        });
+      },
+      
+      logout: () => {
+        set({ 
+          loggedIn: false, 
+          user: null, 
+          userId: null,
+          role: null,
+          token: null
+        });
+      }
+    }),
+    {
+      name: 'auth-storage', // tên key trong localStorage
+      partialize: (state) => ({
+        // chỉ lưu những field cần thiết, không lưu functions
+        loggedIn: state.loggedIn,
+        user: state.user,
+        userId: state.userId,
+        role: state.role,
+        token: state.token
+      })
+    }
+  )
+);

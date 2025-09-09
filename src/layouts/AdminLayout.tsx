@@ -10,15 +10,16 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
       minHeight: '100vh', 
       display: 'flex', 
       flexDirection: 'column', 
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      background: '#f7fafc',
     }}>
       <AppBar 
         position="static" 
         sx={{ 
-          background: 'rgba(255, 255, 255, 0.1)',
+          background: 'rgba(255, 255, 255, 0.95)',
           backdropFilter: 'blur(20px)',
           border: 'none',
-          boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)',
+          borderBottom: '1px solid rgba(0, 0, 0, 0.08)',
+          boxShadow: '0 2px 8px rgba(0, 0, 0, 0.05)',
         }} 
         elevation={0}
       >
@@ -39,13 +40,13 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               width: 48,
               height: 48,
               borderRadius: '12px',
-              background: 'rgba(255, 255, 255, 0.2)',
+              background: '#667eea',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
               fontSize: '24px',
-              backdropFilter: 'blur(10px)',
-              border: '1px solid rgba(255, 255, 255, 0.3)'
+              color: 'white',
+              boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)'
             }}>
               ⚙️
             </Box>
@@ -56,15 +57,14 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
                 fontSize: 32, 
                 fontWeight: 900, 
                 letterSpacing: 0.5, 
-                color: 'white',
-                textShadow: '0 2px 20px rgba(0, 0, 0, 0.3)',
+                color: '#2d3748',
               }}>
                 Admin Panel
               </Box>
               <Box sx={{ 
                 fontSize: 13, 
                 fontWeight: 600,
-                color: 'rgba(255, 255, 255, 0.8)',
+                color: '#718096',
                 letterSpacing: 1.2,
                 textTransform: 'uppercase'
               }}>

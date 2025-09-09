@@ -23,7 +23,7 @@ const ChatHistory: React.FC<Props> = ({ chats, currentChatId, onSelect, onNewCha
   const displayChats = chats && chats.length > 0 ? chats : [{ id: 'g1', title: 'Cuộc hội thoại mới' }];
 
   return (
-    <Box display="flex" flexDirection="column" height="100%" width="100%">
+    <Box display="flex" flexDirection="column" height="100%" width="100%" overflow="hidden">
       {/* Header với brand */}
       <Box mb={4} textAlign="center">
         <Typography
@@ -85,7 +85,7 @@ const ChatHistory: React.FC<Props> = ({ chats, currentChatId, onSelect, onNewCha
         </Typography>
       </Box>
 
-      <List sx={{ flex: 1, overflowY: 'auto', p: 0 }}>
+      <List sx={{ flex: 1, overflowY: 'auto', overflowX: 'hidden', p: 0 }}>
         {displayChats.map((chat) => {
           const selected = chat.id === currentChatId;
           return (
@@ -130,11 +130,14 @@ const ChatHistory: React.FC<Props> = ({ chats, currentChatId, onSelect, onNewCha
                 <ListItemText
                   primary={
                     <Typography
-                      noWrap
                       sx={{
                         color: selected ? 'white' : 'text.primary',
                         fontWeight: selected ? 700 : 600,
-                        fontSize: 15
+                        fontSize: 15,
+                        overflow: 'hidden',
+                        textOverflow: 'ellipsis',
+                        whiteSpace: 'nowrap',
+                        maxWidth: '100%'
                       }}
                     >
                       {chat.title}

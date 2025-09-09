@@ -137,7 +137,7 @@ const UserManager: React.FC = () => {
         icon={<PersonIcon />}
         label="Người dùng"
         sx={{
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          background: '#667eea',
           color: 'white',
           fontWeight: 700,
           '& .MuiChip-icon': { color: 'white' }
@@ -160,10 +160,7 @@ const UserManager: React.FC = () => {
           variant="h3" 
           sx={{
             fontWeight: 900, 
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
+            color: '#2d3748',
             mb: 1,
             display: 'flex',
             alignItems: 'center',
@@ -173,7 +170,7 @@ const UserManager: React.FC = () => {
           <GroupIcon sx={{ fontSize: 48, color: '#667eea' }} />
           Quản lý Người dùng
         </Typography>
-        <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 500 }}>
+        <Typography variant="h6" sx={{ fontWeight: 500, color: '#718096' }}>
           Thêm, sửa, xóa và quản lý tài khoản người dùng
         </Typography>
       </Box>
@@ -199,7 +196,7 @@ const UserManager: React.FC = () => {
               px: 3,
               py: 1.5,
               borderRadius: 3,
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              background: '#667eea',
               boxShadow: '0 8px 32px rgba(102, 126, 234, 0.3)',
               transition: 'all 0.3s ease',
               '&:hover': {
@@ -278,17 +275,17 @@ const UserManager: React.FC = () => {
         border: '1px solid rgba(255, 255, 255, 0.2)',
         boxShadow: '0 8px 32px rgba(0, 0, 0, 0.1)'
       }}>
-        <TableContainer>
-          <Table sx={{ minWidth: 900 }}>
+        <TableContainer sx={{ overflowX: 'hidden' }}>
+          <Table sx={{ width: '100%' }}>
             <TableHead>
               <TableRow sx={{ 
-                background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                background: '#667eea'
               }}>
-                <TableCell sx={{ color: 'white', fontWeight: 700, fontSize: 16 }}>STT</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 700, fontSize: 16 }}>Người dùng</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 700, fontSize: 16 }}>Tài khoản</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 700, fontSize: 16 }}>Vai trò</TableCell>
-                <TableCell sx={{ color: 'white', fontWeight: 700, fontSize: 16, textAlign: 'center' }}>Hành động</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 700, fontSize: 16, width: '8%' }}>STT</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 700, fontSize: 16, width: '35%' }}>Người dùng</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 700, fontSize: 16, width: '20%' }}>Tài khoản</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 700, fontSize: 16, width: '20%' }}>Vai trò</TableCell>
+                <TableCell sx={{ color: 'white', fontWeight: 700, fontSize: 16, textAlign: 'center', width: '17%' }}>Hành động</TableCell>
               </TableRow>
             </TableHead>
             <TableBody>
@@ -306,31 +303,31 @@ const UserManager: React.FC = () => {
                     }
                   }}
                 >
-                  <TableCell sx={{ fontWeight: 600 }}>
+                  <TableCell sx={{ fontWeight: 600, width: '8%' }}>
                     {(page - 1) * pageSize + idx + 1}
                   </TableCell>
-                  <TableCell>
+                  <TableCell sx={{ width: '35%' }}>
                     <Box sx={{ display: 'flex', alignItems: 'center', gap: 2 }}>
                       {getUserAvatar(user)}
                       <Box>
                         <Typography sx={{ fontWeight: 700, fontSize: 16 }}>
                           {user.fullname}
                         </Typography>
-                        <Typography variant="caption" color="text.secondary">
+                        <Typography variant="caption" sx={{ color: '#718096' }}>
                           ID: {user.id}
                         </Typography>
                       </Box>
                     </Box>
                   </TableCell>
-                  <TableCell>
+                  <TableCell sx={{ width: '20%' }}>
                     <Typography sx={{ fontWeight: 600, fontSize: 15 }}>
                       {user.username}
                     </Typography>
                   </TableCell>
-                  <TableCell>
+                  <TableCell sx={{ width: '20%' }}>
                     {getRoleChip(user.role)}
                   </TableCell>
-                  <TableCell align="center">
+                  <TableCell align="center" sx={{ width: '17%' }}>
                     <Stack direction="row" spacing={1} justifyContent="center">
                       <IconButton
                         onClick={() => handleEditUser(user)}
@@ -364,10 +361,10 @@ const UserManager: React.FC = () => {
                 <TableRow>
                   <TableCell colSpan={5} align="center" sx={{ py: 6 }}>
                     <GroupIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
-                    <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 600 }}>
+                    <Typography variant="h6" sx={{ fontWeight: 600, color: '#718096' }}>
                       Không tìm thấy người dùng nào
                     </Typography>
-                    <Typography variant="body2" color="text.secondary">
+                    <Typography variant="body2" sx={{ color: '#718096' }}>
                       Thử thay đổi bộ lọc hoặc từ khóa tìm kiếm
                     </Typography>
                   </TableCell>
@@ -403,7 +400,7 @@ const UserManager: React.FC = () => {
                   <MenuItem key={opt} value={opt}>{opt}</MenuItem>
                 ))}
               </Select>
-              <Typography variant="body2" color="text.secondary">
+              <Typography variant="body2" sx={{ color: '#718096' }}>
                 trong tổng số {filteredUsers.length} người dùng
               </Typography>
             </Stack>
@@ -430,7 +427,7 @@ const UserManager: React.FC = () => {
           fontWeight: 700, 
           fontSize: 24, 
           pb: 1,
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          background: '#667eea',
           color: 'white'
         }}>
           <PersonAddAlt1Icon sx={{ mr: 1, verticalAlign: 'middle' }} />
@@ -493,7 +490,7 @@ const UserManager: React.FC = () => {
             sx={{ 
               borderRadius: 3, 
               fontWeight: 700,
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              background: '#667eea',
               '&:hover': {
                 background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)'
               }
@@ -511,7 +508,7 @@ const UserManager: React.FC = () => {
           fontWeight: 700, 
           fontSize: 24, 
           pb: 1,
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          background: '#667eea',
           color: 'white'
         }}>
           <EditIcon sx={{ mr: 1, verticalAlign: 'middle' }} />
@@ -574,7 +571,7 @@ const UserManager: React.FC = () => {
             sx={{ 
               borderRadius: 3, 
               fontWeight: 700,
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+              background: '#667eea',
               '&:hover': {
                 background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)'
               }

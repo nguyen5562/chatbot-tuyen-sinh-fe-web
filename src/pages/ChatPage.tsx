@@ -26,8 +26,10 @@ const ChatPage: React.FC = () => {
   // Chat store
   const chats = useChatStore((state) => state.chats);
   const currentChatId = useChatStore((state) => state.currentChatId);
+  const isLoadingChats = useChatStore((state) => state.isLoading);
   const setChats = useChatStore((state) => state.setChats);
   const setCurrentChatId = useChatStore((state) => state.setCurrentChatId);
+  const fetchChatHistory = useChatStore((state) => state.fetchChatHistory);
 
   // const addChat = useChatStore((state) => state.addChat);
   const addMessage = useChatStore((state) => state.addMessage);
@@ -38,7 +40,6 @@ const ChatPage: React.FC = () => {
   const [input, setInput] = useState('');
   const [loading, setLoading] = useState(false);
   const [showInputAtBottom, setShowInputAtBottom] = useState(false);
-  const [isLoadingChats, setIsLoadingChats] = useState(false);
 
   // Thêm hằng cho id cuộc hội thoại mới
   const NEW_CHAT_ID = 'new';
@@ -46,19 +47,21 @@ const ChatPage: React.FC = () => {
   // useEffect lấy danh sách chat khi đăng nhập
   useEffect(() => {
     if (loggedIn && userId) {
-      setIsLoadingChats(true);
-      chatApi.getChatByUser(userId).then((res) => {
-        if (res.status === 'Success' && res.data) {
-          // Thêm 'Cuộc hội thoại mới' vào đầu danh sách
-          setChats([{ id: NEW_CHAT_ID, title: 'Cuộc hội thoại mới', messages: [] }, ...res.data]);
+      fetchChatHistory(userId).then(() => {
+        // Sau khi fetch xong, thêm 'Cuộc hội thoại mới' vào đầu danh sách
+        // Sử dụng setTimeout để đảm bảo state đã được update
+        setTimeout(() => {
+          const currentChats = useChatStore.getState().chats;
+          const hasNewChat = currentChats.some((chat: ChatDTO) => chat.id === NEW_CHAT_ID);
+          if (!hasNewChat) {
+            const newChats = [{ id: NEW_CHAT_ID, title: 'Cuộc hội thoại mới', messages: [] }, ...currentChats];
+            setChats(newChats);
+          }
           setCurrentChatId(NEW_CHAT_ID); // Luôn chọn cuộc hội thoại mới khi vào
-        }
-        setIsLoadingChats(false);
-      }).catch(() => {
-        setIsLoadingChats(false);
+        }, 100);
       });
     }
-  }, [loggedIn, userId, setChats, setCurrentChatId]);
+  }, [loggedIn, userId, fetchChatHistory, setChats, setCurrentChatId]);
 
   // Hàm tạo chat mới
   const handleNewChat = async () => {
@@ -128,20 +131,26 @@ const ChatPage: React.FC = () => {
           if (res.status === 'Success' && res.data) {
             // Thay thế 'Cuộc hội thoại mới' bằng chat thật vừa tạo
             const chatsWithoutNew = chats.filter((c) => c.id !== NEW_CHAT_ID);
+            const newChatWithMessages = {
+              ...res.data!,
+              messages: [
+                { id: Date.now().toString(), role: 'user', content: msg },
+                { id: (Date.now() + 1).toString(), role: 'assistant', content: '__loading__' }
+              ]
+            };
             setChats([
-              res.data!,
+              newChatWithMessages,
               ...chatsWithoutNew
             ]);
             setCurrentChatId(res.data.id);
-            // Gửi tin nhắn vào chat mới
-            const userMsg = { id: Date.now().toString(), role: 'user', content: msg };
-            const loadingMsg = { id: (Date.now() + 1).toString(), role: 'assistant', content: '__loading__' };
-            addMessage(res.data.id, userMsg);
-            addMessage(res.data.id, loadingMsg);
 
             // Nếu tiêu đề vẫn là mặc định, cập nhật thành tin nhắn đầu tiên (optimistic update + API)
             if (res.data.title === 'Cuộc hội thoại mới') {
-              setChats(chats.map((c) => (c.id === res.data!.id ? { ...c, title: msg } : c)));
+              setTimeout(() => {
+                const currentChats = useChatStore.getState().chats;
+                const updatedChats = currentChats.map((c) => (c.id === res.data!.id ? { ...c, title: msg } : c));
+                setChats(updatedChats);
+              }, 100);
               chatApi
                 .updateChatTitle(res.data.id, { title: msg })
                 .catch(() => { /* ignore */ });
@@ -170,7 +179,7 @@ const ChatPage: React.FC = () => {
             setLoading(false);
           }
         } catch (error) {
-          console.log(error);
+          console.error('Error creating new chat:', error);
           setLoading(false);
         }
         return;
@@ -184,7 +193,11 @@ const ChatPage: React.FC = () => {
         // Nếu tiêu đề vẫn là mặc định, cập nhật thành tin nhắn đầu tiên (optimistic update + API)
         const currentChatTitle = chats.find((c) => c.id === currentChatId)?.title;
         if (currentChatTitle === 'Cuộc hội thoại mới') {
-          setChats(chats.map((c) => (c.id === currentChatId ? { ...c, title: msg } : c)));
+          setTimeout(() => {
+            const currentChats = useChatStore.getState().chats;
+            const updatedChats = currentChats.map((c) => (c.id === currentChatId ? { ...c, title: msg } : c));
+            setChats(updatedChats);
+          }, 100);
           chatApi
             .updateChatTitle(currentChatId, { title: msg })
             .catch(() => { /* ignore */ });
@@ -345,30 +358,30 @@ const ChatPage: React.FC = () => {
         minHeight: 0,
         alignItems: 'center',
         justifyContent: 'center',
-        background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+        background: '#f7fafc'
       }}>
-        <div className="flex flex-col items-center justify-center p-8 bg-white/10 backdrop-blur-lg rounded-3xl shadow-2xl">
-          <FontAwesomeIcon icon={faSpinner} spin className="text-6xl text-white mb-6" />
-          <div className="text-2xl font-bold text-white">Đang tải cuộc hội thoại...</div>
+        <div className="flex flex-col items-center justify-center p-8 bg-white rounded-3xl shadow-2xl border border-gray-200">
+          <FontAwesomeIcon icon={faSpinner} spin className="text-6xl text-blue-600 mb-6" />
+          <div className="text-2xl font-bold text-gray-800">Đang tải cuộc hội thoại...</div>
         </div>
       </Box>
     );
   }
 
   return (
-    <Box sx={{ display: 'flex', flex: 1, minHeight: 0, background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' }}>
+    <Box sx={{ display: 'flex', flex: 1, minHeight: 0, background: '#f7fafc' }}>
       {/* Sidebar ChatHistory */}
       <Box sx={{
         width: sidebarWidth,
-        background: 'linear-gradient(180deg, rgba(255,255,255,0.95) 0%, rgba(255,255,255,0.9) 100%)',
+        background: 'rgba(255, 255, 255, 0.98)',
         backdropFilter: 'blur(20px)',
-        borderRight: '1px solid rgba(255,255,255,0.2)',
+        borderRight: '1px solid rgba(0, 0, 0, 0.08)',
         p: 3,
         zIndex: 10,
         minHeight: 0,
         height: '100vh',
         overflowY: 'auto',
-        boxShadow: '4px 0 24px rgba(0,0,0,0.1)'
+        boxShadow: '2px 0 12px rgba(0,0,0,0.05)'
       }}>
         <ChatHistory
           chats={loggedIn ? chats : guestChats}
@@ -388,10 +401,10 @@ const ChatPage: React.FC = () => {
             ${isNewChat ? 'opacity-100 pointer-events-auto' : 'opacity-0 pointer-events-none translate-y-32'}`}
           >
             <div className="text-center mb-12">
-              <div className="text-5xl md:text-6xl font-black text-white mb-4 drop-shadow-2xl">
+              <div className="text-5xl md:text-6xl font-black text-gray-800 mb-4">
                 Xin chào! 👋
               </div>
-              <div className="text-xl md:text-2xl text-white/80 font-medium max-w-2xl mx-auto leading-relaxed">
+              <div className="text-xl md:text-2xl text-gray-600 font-medium max-w-2xl mx-auto leading-relaxed">
                 Tôi là ChatBot MTA, sẵn sàng hỗ trợ bạn với mọi câu hỏi về tuyển sinh
               </div>
             </div>
@@ -404,7 +417,7 @@ const ChatPage: React.FC = () => {
                   if (!loading) handleSend(input);
                 }}
               >
-                <div className="flex-1 bg-white/95 backdrop-blur-xl rounded-2xl shadow-2xl border border-white/20">
+                <div className="flex-1 bg-white rounded-2xl shadow-lg border border-gray-200">
                   <input
                     className="w-full px-8 py-6 bg-transparent border-none outline-none text-gray-800 placeholder-gray-500 text-lg font-medium rounded-2xl"
                     type="text"
@@ -416,7 +429,7 @@ const ChatPage: React.FC = () => {
                 </div>
                 <button
                   type="submit"
-                  className="bg-gradient-to-r from-blue-600 to-purple-600 text-white w-16 h-16 rounded-2xl flex items-center justify-center text-xl shadow-2xl hover:from-blue-700 hover:to-purple-700 transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
+                  className="bg-blue-600 text-white w-16 h-16 rounded-2xl flex items-center justify-center text-xl shadow-lg hover:bg-blue-700 transform hover:scale-105 transition-all duration-300 disabled:opacity-50 disabled:cursor-not-allowed"
                   disabled={loading || !input.trim()}
                 >
                   {loading ? (
@@ -430,7 +443,7 @@ const ChatPage: React.FC = () => {
 
             {/* Gợi ý câu hỏi */}
             <div className="mt-12 max-w-4xl mx-auto px-8">
-              <div className="text-white/70 text-lg font-medium mb-6 text-center">
+              <div className="text-gray-600 text-lg font-medium mb-6 text-center">
                 Một số câu hỏi phổ biến:
               </div>
               <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
@@ -443,9 +456,9 @@ const ChatPage: React.FC = () => {
                   <button
                     key={idx}
                     onClick={() => setInput(question)}
-                    className="bg-white/10 backdrop-blur-md text-white px-6 py-4 rounded-xl text-left hover:bg-white/20 transition-all duration-300 border border-white/20 hover:border-white/40 transform hover:scale-105"
+                    className="bg-white text-gray-700 px-6 py-4 rounded-xl text-left hover:bg-gray-50 transition-all duration-300 border border-gray-200 hover:border-gray-300 transform hover:scale-105 shadow-sm"
                   >
-                    <span className="text-white/60 mr-2">💡</span>
+                    <span className="text-blue-500 mr-2">💡</span>
                     {question}
                   </button>
                 ))}
@@ -464,9 +477,9 @@ const ChatPage: React.FC = () => {
             >
               {currentMessages.map((msg, idx) =>
                 msg.content === '__loading__' ? (
-                  <div key={msg.id + idx} className="flex items-center gap-3 text-white/80 animate-pulse bg-white/10 backdrop-blur-md rounded-2xl px-6 py-4 max-w-md">
-                    <FontAwesomeIcon icon={faSpinner} spin className="text-xl" />
-                    <span className="font-medium">Đang suy nghĩ...</span>
+                  <div key={msg.id + idx} className="flex items-center gap-3 text-white animate-pulse">
+                    <FontAwesomeIcon icon={faSpinner} spin className="text-xl text-purple-300" />
+                    <span className="font-medium text-purple-300">Đang suy nghĩ...</span>
                   </div>
                 ) : (
                   <ChatMessage key={msg.id} message={{ ...msg, role: msg.role as 'user' | 'assistant' }} />

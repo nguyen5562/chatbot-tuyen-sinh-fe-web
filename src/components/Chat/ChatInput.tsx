@@ -99,29 +99,41 @@ const ChatInput: React.FC<Props> = ({ value, onChange, onSend, disabled }) => {
         }}
         sx={{
           background: value.trim()
-            ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
-            : 'rgba(255, 255, 255, 0.3)',
-          color: value.trim() ? 'white' : 'rgba(255, 255, 255, 0.7)',
+            ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%) !important'
+            : 'linear-gradient(135deg, rgba(102, 126, 234, 0.3) 0%, rgba(118, 75, 162, 0.3) 100%) !important',
+          color: 'white !important',
           width: 56,
           height: 56,
           boxShadow: value.trim()
-            ? '0 8px 32px rgba(102, 126, 234, 0.4)'
-            : '0 4px 16px rgba(0, 0, 0, 0.1)',
-          transition: 'all 0.3s ease',
+            ? '0 8px 32px rgba(102, 126, 234, 0.4) !important'
+            : '0 4px 16px rgba(102, 126, 234, 0.2) !important',
+          transition: 'all 0.3s ease !important',
           transform: focus && value.trim() ? 'scale(1.1)' : 'scale(1)',
+          border: 'none !important',
+          opacity: value.trim() ? 1 : 0.6,
           '&:hover': {
             background: value.trim()
-              ? 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)'
-              : 'rgba(255, 255, 255, 0.4)',
+              ? 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%) !important'
+              : 'linear-gradient(135deg, rgba(90, 103, 216, 0.4) 0%, rgba(107, 70, 193, 0.4) 100%) !important',
             boxShadow: value.trim()
-              ? '0 12px 40px rgba(102, 126, 234, 0.5)'
-              : '0 6px 24px rgba(0, 0, 0, 0.15)',
-            transform: 'scale(1.05)'
+              ? '0 12px 40px rgba(102, 126, 234, 0.5) !important'
+              : '0 6px 24px rgba(102, 126, 234, 0.3) !important',
+            transform: 'scale(1.05) !important',
+            opacity: 1,
+            color: 'white !important'
           },
           '&:disabled': {
-            background: 'rgba(255, 255, 255, 0.2)',
-            color: 'rgba(255, 255, 255, 0.5)',
-            cursor: 'not-allowed'
+            background: 'linear-gradient(135deg, rgba(102, 126, 234, 0.2) 0%, rgba(118, 75, 162, 0.2) 100%) !important',
+            color: 'rgba(255, 255, 255, 0.5) !important',
+            cursor: 'not-allowed !important',
+            boxShadow: 'none !important',
+            opacity: 0.4
+          },
+          '&:focus': {
+            outline: 'none !important',
+            boxShadow: value.trim()
+              ? '0 0 0 3px rgba(102, 126, 234, 0.3), 0 8px 32px rgba(102, 126, 234, 0.4) !important'
+              : '0 0 0 3px rgba(102, 126, 234, 0.2), 0 4px 16px rgba(102, 126, 234, 0.2) !important'
           }
         }}
         disabled={disabled || !value.trim()}

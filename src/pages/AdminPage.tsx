@@ -13,10 +13,9 @@ const AdminPage: React.FC = () => {
       
       <Box sx={{ 
         flex: 1,
-        background: 'rgba(255, 255, 255, 0.05)',
-        backdropFilter: 'blur(10px)',
+        background: 'transparent',
         overflow: 'auto',
-        minHeight: 'calc(100vh - 72px)'
+        height: '100%'
       }}>
         {selectedTab === 'file' && <FileManager />}
         {selectedTab === 'user' && <UserManager />}

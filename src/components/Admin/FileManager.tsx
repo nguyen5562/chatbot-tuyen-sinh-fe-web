@@ -86,10 +86,7 @@ const FileManager: React.FC = () => {
           variant="h3" 
           sx={{
             fontWeight: 900, 
-            background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-            WebkitBackgroundClip: 'text',
-            WebkitTextFillColor: 'transparent',
-            backgroundClip: 'text',
+            color: '#2d3748',
             mb: 1,
             display: 'flex',
             alignItems: 'center',
@@ -99,7 +96,7 @@ const FileManager: React.FC = () => {
           <CloudUploadIcon sx={{ fontSize: 48, color: '#667eea' }} />
           Quản lý File
         </Typography>
-        <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 500 }}>
+        <Typography variant="h6" sx={{ fontWeight: 500, color: '#718096' }}>
           Upload và quản lý tài liệu cho hệ thống ChatBot
         </Typography>
       </Box>
@@ -120,7 +117,7 @@ const FileManager: React.FC = () => {
           variant="h5" 
           sx={{ 
             fontWeight: 700, 
-            color: '#667eea', 
+            color: '#2d3748', 
             mb: 3,
             display: 'flex',
             alignItems: 'center',
@@ -136,7 +133,7 @@ const FileManager: React.FC = () => {
           <Typography variant="subtitle2" sx={{ fontWeight: 700, color: '#667eea', mb: 1 }}>
             💡 Hướng dẫn upload:
           </Typography>
-          <Typography variant="body2" color="text.secondary" sx={{ lineHeight: 1.6 }}>
+          <Typography variant="body2" sx={{ lineHeight: 1.6, color: '#718096' }}>
             • Hỗ trợ các định dạng: PDF, DOC, DOCX, TXT, JPG, PNG<br/>
             • Kích thước tối đa: 10MB<br/>
             • Tên file nên có ý nghĩa và dễ tìm kiếm
@@ -158,7 +155,7 @@ const FileManager: React.FC = () => {
         {/* Files Header */}
         <Box sx={{ 
           p: 3, 
-          background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+          background: '#667eea',
           color: 'white'
         }}>
           <Typography variant="h5" sx={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 2 }}>
@@ -180,10 +177,10 @@ const FileManager: React.FC = () => {
             <ListItem sx={{ py: 6, textAlign: 'center' }}>
               <Box sx={{ width: '100%', textAlign: 'center' }}>
                 <CloudUploadIcon sx={{ fontSize: 64, color: 'text.disabled', mb: 2 }} />
-                <Typography variant="h6" color="text.secondary" sx={{ fontWeight: 600 }}>
+                <Typography variant="h6" sx={{ fontWeight: 600, color: '#718096' }}>
                   Chưa có file nào được upload
                 </Typography>
-                <Typography variant="body2" color="text.secondary">
+                <Typography variant="body2" sx={{ color: '#718096' }}>
                   Hãy upload file đầu tiên để bắt đầu
                 </Typography>
               </Box>
@@ -218,7 +215,7 @@ const FileManager: React.FC = () => {
                           size="small" 
                           sx={{ bgcolor: 'rgba(102, 126, 234, 0.1)', color: '#667eea', fontWeight: 600 }}
                         />
-                        <Typography variant="caption" color="text.secondary">
+                        <Typography variant="caption" sx={{ color: '#718096' }}>
                           {formatDate(file.uploadDate)}
                         </Typography>
                       </Box>
@@ -273,7 +270,7 @@ const FileManager: React.FC = () => {
             justifyContent: 'space-between',
             alignItems: 'center'
           }}>
-            <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
+            <Typography variant="body2" sx={{ fontWeight: 500, color: '#718096' }}>
               Tổng cộng: {files.length} file • {formatFileSize(files.reduce((sum, f) => sum + f.size, 0))}
             </Typography>
             <Button

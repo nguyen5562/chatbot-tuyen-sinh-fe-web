@@ -78,7 +78,7 @@ const RegisterPage: React.FC = () => {
   return (
     <Box sx={{
       minHeight: '100vh',
-      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+      background: '#f7fafc',
       display: 'flex',
       alignItems: 'center',
       justifyContent: 'center',
@@ -106,7 +106,7 @@ const RegisterPage: React.FC = () => {
                   mb: 2,
                   width: 64,
                   height: 64,
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  background: '#667eea',
                   boxShadow: '0 8px 32px rgba(102, 126, 234, 0.3)'
                 }}
               >
@@ -118,18 +118,14 @@ const RegisterPage: React.FC = () => {
                 sx={{ 
                   fontWeight: 900,
                   mb: 1,
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-                  WebkitBackgroundClip: 'text',
-                  WebkitTextFillColor: 'transparent',
-                  backgroundClip: 'text'
+                  color: '#2d3748'
                 }}
               >
                 Đăng ký
               </Typography>
               <Typography 
                 variant="body1" 
-                color="text.secondary"
-                sx={{ fontWeight: 500 }}
+                sx={{ fontWeight: 500, color: '#718096' }}
               >
                 Tạo tài khoản mới để bắt đầu!
               </Typography>
@@ -255,16 +251,16 @@ const RegisterPage: React.FC = () => {
                   fontWeight: 700, 
                   fontSize: 16,
                   borderRadius: 3,
-                  background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
+                  background: '#667eea',
                   boxShadow: '0 8px 32px rgba(102, 126, 234, 0.4)',
                   transition: 'all 0.3s ease',
                   '&:hover': {
-                    background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)',
+                    background: '#5a67d8',
                     boxShadow: '0 12px 40px rgba(102, 126, 234, 0.5)',
                     transform: 'translateY(-2px)'
                   },
                   '&:disabled': {
-                    background: 'linear-gradient(135deg, #a0aec0 0%, #9ca3af 100%)',
+                    background: '#a0aec0',
                     boxShadow: 'none'
                   }
                 }}

@@ -10,7 +10,7 @@ import GroupIcon from '@mui/icons-material/Group';
 import Box from '@mui/material/Box';
 import Typography from '@mui/material/Typography';
 
-const drawerWidth = 280;
+const drawerWidth = 320;
 
 type Props = {
   selectedTab: 'file' | 'user';
@@ -42,13 +42,13 @@ const AdminSidebar: React.FC<Props> = ({ selectedTab, setSelectedTab }) => {
         [`& .MuiDrawer-paper`]: {
           width: drawerWidth,
           boxSizing: 'border-box',
-          background: 'rgba(255, 255, 255, 0.95)',
+          background: 'rgba(255, 255, 255, 0.98)',
           backdropFilter: 'blur(20px)',
           border: 'none',
-          borderRight: '1px solid rgba(255, 255, 255, 0.2)',
-          top: 72,
-          height: 'calc(100vh - 72px)',
-          boxShadow: '4px 0 24px rgba(0, 0, 0, 0.1)',
+          borderRight: '1px solid rgba(0, 0, 0, 0.08)',
+          position: 'relative',
+          height: '100%',
+          boxShadow: '2px 0 12px rgba(0, 0, 0, 0.05)',
         },
       }}
     >
@@ -59,10 +59,7 @@ const AdminSidebar: React.FC<Props> = ({ selectedTab, setSelectedTab }) => {
             variant="h6" 
             sx={{ 
               fontWeight: 800,
-              background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)',
-              WebkitBackgroundClip: 'text',
-              WebkitTextFillColor: 'transparent',
-              backgroundClip: 'text',
+              color: '#2d3748',
               mb: 1
             }}
           >
@@ -70,8 +67,7 @@ const AdminSidebar: React.FC<Props> = ({ selectedTab, setSelectedTab }) => {
           </Typography>
           <Typography 
             variant="body2" 
-            color="text.secondary"
-            sx={{ fontWeight: 500 }}
+            sx={{ fontWeight: 500, color: '#718096' }}
           >
             Quản lý hệ thống
           </Typography>
@@ -89,27 +85,27 @@ const AdminSidebar: React.FC<Props> = ({ selectedTab, setSelectedTab }) => {
                     borderRadius: 3,
                     minHeight: 64,
                     background: selected 
-                      ? 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)' 
+                      ? '#667eea' 
                       : 'transparent',
-                    color: selected ? 'white' : 'text.primary',
-                    boxShadow: selected ? '0 8px 32px rgba(102, 126, 234, 0.3)' : 'none',
+                    color: selected ? 'white' : '#2d3748',
+                    boxShadow: selected ? '0 4px 16px rgba(102, 126, 234, 0.2)' : 'none',
                     transition: 'all 0.3s ease',
                     px: 3,
                     py: 2,
                     '&:hover': { 
                       background: selected 
-                        ? 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)'
+                        ? '#5a67d8'
                         : 'rgba(102, 126, 234, 0.08)',
                       transform: 'translateX(4px)',
                       boxShadow: selected 
-                        ? '0 12px 40px rgba(102, 126, 234, 0.4)'
-                        : '0 4px 20px rgba(102, 126, 234, 0.1)'
+                        ? '0 6px 20px rgba(102, 126, 234, 0.3)'
+                        : '0 2px 8px rgba(102, 126, 234, 0.1)'
                     },
                     '&.Mui-selected': { 
-                      background: 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)'
+                      background: '#667eea'
                     },
                     '&.Mui-selected:hover': { 
-                      background: 'linear-gradient(135deg, #5a67d8 0%, #6b46c1 100%)'
+                      background: '#5a67d8'
                     },
                   }}
                 >
@@ -128,7 +124,7 @@ const AdminSidebar: React.FC<Props> = ({ selectedTab, setSelectedTab }) => {
                     primary={
                       <Typography 
                         sx={{ 
-                          color: selected ? 'white' : 'text.primary', 
+                          color: selected ? 'white' : '#2d3748', 
                           fontWeight: selected ? 700 : 600,
                           fontSize: 16,
                           mb: 0.5
@@ -141,7 +137,7 @@ const AdminSidebar: React.FC<Props> = ({ selectedTab, setSelectedTab }) => {
                       <Typography
                         variant="caption"
                         sx={{
-                          color: selected ? 'rgba(255,255,255,0.8)' : 'text.secondary',
+                          color: selected ? 'rgba(255,255,255,0.8)' : '#718096',
                           fontSize: 12,
                           fontWeight: 500
                         }}
@@ -179,7 +175,7 @@ const AdminSidebar: React.FC<Props> = ({ selectedTab, setSelectedTab }) => {
           >
             <span>📊</span> Thống kê
           </Typography>
-          <Typography variant="body2" color="text.secondary">
+          <Typography variant="body2" sx={{ color: '#718096' }}>
             Hệ thống đang hoạt động bình thường
           </Typography>
         </Box>

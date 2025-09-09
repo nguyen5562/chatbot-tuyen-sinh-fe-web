@@ -165,7 +165,7 @@ const NotFoundPage: React.FC = () => {
             }}
           >
             <span style={{ fontSize: '18px' }}>🎓</span>
-            Học viện Công nghệ MTA • ChatBot hỗ trợ tuyển sinh
+            Học viện Kỹ thuật quân sự MTA • ChatBot hỗ trợ tuyển sinh
           </Typography>
         </Box>
       </Paper>
