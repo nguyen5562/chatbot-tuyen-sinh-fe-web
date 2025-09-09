@@ -48,4 +48,21 @@ const sendMessage = async (
   });
 };
 
-export const chatApi = { createChat, getChatByUser, getChatById, sendMessage };
+const updateChatTitle = async (
+  chatId: string,
+  chat: CreateChatRequest
+): Promise<ApiResponse<string>> => {
+  return api.makeRequest<ApiResponse<string>>({
+    url: `/chat/update-chat-title/${chatId}`,
+    method: "PUT",
+    data: chat,
+  });
+};
+
+export const chatApi = {
+  createChat,
+  getChatByUser,
+  getChatById,
+  sendMessage,
+  updateChatTitle,
+};

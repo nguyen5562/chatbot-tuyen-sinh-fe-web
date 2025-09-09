@@ -6,7 +6,7 @@ const api = createApiInstance(modelApiBaseUrl);
 
 const getResponse = async (query: string): Promise<string> => {
   return api.makeRequest<string>({
-    url: "get-response",
+    url: "/get-response",
     method: "POST",
     data: {
       query,

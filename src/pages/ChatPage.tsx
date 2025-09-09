@@ -28,6 +28,7 @@ const ChatPage: React.FC = () => {
   const currentChatId = useChatStore((state) => state.currentChatId);
   const setChats = useChatStore((state) => state.setChats);
   const setCurrentChatId = useChatStore((state) => state.setCurrentChatId);
+
   // const addChat = useChatStore((state) => state.addChat);
   const addMessage = useChatStore((state) => state.addMessage);
   const updateAssistantMessage = useChatStore((state) => state.updateAssistantMessage);
@@ -137,6 +138,14 @@ const ChatPage: React.FC = () => {
             const loadingMsg = { id: (Date.now() + 1).toString(), role: 'assistant', content: '__loading__' };
             addMessage(res.data.id, userMsg);
             addMessage(res.data.id, loadingMsg);
+
+            // Nếu tiêu đề vẫn là mặc định, cập nhật thành tin nhắn đầu tiên (optimistic update + API)
+            if (res.data.title === 'Cuộc hội thoại mới') {
+              setChats(chats.map((c) => (c.id === res.data!.id ? { ...c, title: msg } : c)));
+              chatApi
+                .updateChatTitle(res.data.id, { title: msg })
+                .catch(() => { /* ignore */ });
+            }
             setInput('');
             setLoading(true);
             try {
@@ -171,6 +180,15 @@ const ChatPage: React.FC = () => {
         const loadingMsg = { id: (Date.now() + 1).toString(), role: 'assistant', content: '__loading__' };
         addMessage(currentChatId, userMsg);
         addMessage(currentChatId, loadingMsg);
+        
+        // Nếu tiêu đề vẫn là mặc định, cập nhật thành tin nhắn đầu tiên (optimistic update + API)
+        const currentChatTitle = chats.find((c) => c.id === currentChatId)?.title;
+        if (currentChatTitle === 'Cuộc hội thoại mới') {
+          setChats(chats.map((c) => (c.id === currentChatId ? { ...c, title: msg } : c)));
+          chatApi
+            .updateChatTitle(currentChatId, { title: msg })
+            .catch(() => { /* ignore */ });
+        }
         setInput('');
         setLoading(true);
         try {
