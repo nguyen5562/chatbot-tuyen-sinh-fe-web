@@ -82,7 +82,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ onLogout, isAdminPage }) => {
             }}
           >
             <Avatar sx={{ 
-              bgcolor: '#667eea', 
+              background: 'linear-gradient(135deg, #ff6b6b 0%, #ffa726 100%)', 
               width: 48, 
               height: 48,
               border: '2px solid rgba(255, 255, 255, 0.3)',
@@ -229,7 +229,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ onLogout, isAdminPage }) => {
           }}
         >
           <Avatar sx={{ 
-            background: '#667eea', 
+            background: 'linear-gradient(135deg, #ff6b6b 0%, #ffa726 100%)', 
             width: 48, 
             height: 48,
             color: 'white',

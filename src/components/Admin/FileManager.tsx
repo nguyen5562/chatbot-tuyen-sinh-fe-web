@@ -83,7 +83,7 @@ const FileManager: React.FC = () => {
       {/* Header */}
       <Box sx={{ mb: 4 }}>
         <Typography 
-          variant="h3" 
+          variant="h4" 
           sx={{
             fontWeight: 900, 
             color: '#2d3748',
@@ -93,7 +93,7 @@ const FileManager: React.FC = () => {
             gap: 2
           }}
         >
-          <CloudUploadIcon sx={{ fontSize: 48, color: '#667eea' }} />
+          <CloudUploadIcon sx={{ fontSize: 45, color: '#667eea' }} />
           Quản lý File
         </Typography>
         <Typography variant="h6" sx={{ fontWeight: 500, color: '#718096' }}>
