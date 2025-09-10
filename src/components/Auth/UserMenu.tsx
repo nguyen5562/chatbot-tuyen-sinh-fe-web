@@ -1,22 +1,29 @@
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { useAuthStore } from '../../store/authStore';
 import { useToast } from '../Toast/toastContext';
+import { userApi } from '../../utils/apis/userApi';
 import Avatar from "@mui/material/Avatar";
 import IconButton from "@mui/material/IconButton";
 import Menu from "@mui/material/Menu";
 import MenuItem from "@mui/material/MenuItem";
 import ListItemIcon from "@mui/material/ListItemIcon";
 import ListItemText from "@mui/material/ListItemText";
-import Divider from "@mui/material/Divider";
 import Tooltip from "@mui/material/Tooltip";
 import Box from "@mui/material/Box";
 import Typography from "@mui/material/Typography";
+import Dialog from "@mui/material/Dialog";
+import DialogTitle from "@mui/material/DialogTitle";
+import DialogContent from "@mui/material/DialogContent";
+import DialogActions from "@mui/material/DialogActions";
+import TextField from "@mui/material/TextField";
+import Button from "@mui/material/Button";
 import HomeIcon from "@mui/icons-material/Home";
 import LogoutIcon from "@mui/icons-material/Logout";
 import LoginIcon from "@mui/icons-material/Login";
 import AdminPanelSettingsIcon from "@mui/icons-material/AdminPanelSettings";
-import Button from "@mui/material/Button";
+import PersonIcon from "@mui/icons-material/Person";
+import LockIcon from "@mui/icons-material/Lock";
 
 interface UserMenuProps {
   onLogout?: () => void;
@@ -25,15 +32,33 @@ interface UserMenuProps {
 
 const UserMenu: React.FC<UserMenuProps> = ({ onLogout, isAdminPage }) => {
   const [anchorEl, setAnchorEl] = useState<null | HTMLElement>(null);
+  const [updateProfileOpen, setUpdateProfileOpen] = useState(false);
+  const [changePasswordOpen, setChangePasswordOpen] = useState(false);
+  const [fullname, setFullname] = useState('');
+  const [oldPassword, setOldPassword] = useState('');
+  const [newPassword, setNewPassword] = useState('');
+  const [confirmPassword, setConfirmPassword] = useState('');
+  const [loading, setLoading] = useState(false);
+  
   const open = Boolean(anchorEl);
   const navigate = useNavigate();
   const loggedIn = useAuthStore((state) => state.loggedIn);
   const user = useAuthStore((state) => state.user);
+  const userId = useAuthStore((state) => state.userId);
   const role = useAuthStore((state) => state.role);
   const logout = useAuthStore((state) => state.logout);
+  const updateUser = useAuthStore((state) => state.updateUser);
   const { showToast } = useToast();
+
   const username = user || "User";
   const roleIsAdmin = role === 'admin';
+
+  // Khởi tạo fullname từ authStore
+  useEffect(() => {
+    if (user) {
+      setFullname(user);
+    }
+  }, [user]);
 
   const handleMenu = (event: React.MouseEvent<HTMLElement>) => {
     setAnchorEl(event.currentTarget);
@@ -49,6 +74,65 @@ const UserMenu: React.FC<UserMenuProps> = ({ onLogout, isAdminPage }) => {
     if (onLogout) onLogout();
     navigate("/");
     handleClose();
+  };
+
+  const handleUpdateProfile = async () => {
+    if (!fullname.trim()) {
+      showToast("Vui lòng nhập họ và tên!", "error");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await userApi.updateUser(userId || '', { fullname: fullname.trim() });
+      if (response.statusCode === 200) {
+        // Cập nhật authStore với tên mới
+        updateUser(fullname.trim());
+        showToast("Cập nhật thông tin thành công!", "success");
+        setUpdateProfileOpen(false);
+      } else {
+        showToast(response.message || "Có lỗi xảy ra!", "error");
+      }
+    } catch {
+      showToast("Có lỗi xảy ra khi cập nhật thông tin!", "error");
+    } finally {
+      setLoading(false);
+    }
+  };
+
+  const handleChangePassword = async () => {
+    if (!oldPassword || !newPassword || !confirmPassword) {
+      showToast("Vui lòng điền đầy đủ thông tin!", "error");
+      return;
+    }
+
+    if (newPassword !== confirmPassword) {
+      showToast("Mật khẩu mới và xác nhận mật khẩu không khớp!", "error");
+      return;
+    }
+
+    if (newPassword.length < 6) {
+      showToast("Mật khẩu mới phải có ít nhất 6 ký tự!", "error");
+      return;
+    }
+
+    setLoading(true);
+    try {
+      const response = await userApi.changePassword(userId || '', oldPassword, newPassword);
+      if (response.statusCode === 200) {
+        showToast("Đổi mật khẩu thành công!", "success");
+        setChangePasswordOpen(false);
+        setOldPassword('');
+        setNewPassword('');
+        setConfirmPassword('');
+      } else {
+        showToast(response.message || "Có lỗi xảy ra!", "error");
+      }
+    } catch {
+      showToast("Có lỗi xảy ra khi đổi mật khẩu!", "error");
+    } finally {
+      setLoading(false);
+    }
   };
 
   // Admin page user menu
@@ -137,8 +221,54 @@ const UserMenu: React.FC<UserMenuProps> = ({ onLogout, isAdminPage }) => {
               </Typography>
             </ListItemText>
           </MenuItem>
-          
-          <Divider sx={{ mx: 2, opacity: 0.3 }} />
+
+          <MenuItem 
+            onClick={() => setUpdateProfileOpen(true)}
+            sx={{
+              py: 2,
+              borderRadius: 2,
+              mx: 1,
+              mb: 1,
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                background: 'rgba(76, 175, 80, 0.1)',
+                transform: 'translateX(4px)'
+              }
+            }}
+          >
+            <ListItemIcon>
+              <PersonIcon sx={{ color: '#4caf50' }} />
+            </ListItemIcon>
+            <ListItemText>
+              <Typography sx={{ fontWeight: 600, fontSize: 15 }}>
+                Cập nhật thông tin
+              </Typography>
+            </ListItemText>
+          </MenuItem>
+
+          <MenuItem 
+            onClick={() => setChangePasswordOpen(true)}
+            sx={{
+              py: 2,
+              borderRadius: 2,
+              mx: 1,
+              mb: 1,
+              transition: 'all 0.3s ease',
+              '&:hover': {
+                background: 'rgba(255, 152, 0, 0.1)',
+                transform: 'translateX(4px)'
+              }
+            }}
+          >
+            <ListItemIcon>
+              <LockIcon sx={{ color: '#ff9800' }} />
+            </ListItemIcon>
+            <ListItemText>
+              <Typography sx={{ fontWeight: 600, fontSize: 15 }}>
+                Đổi mật khẩu
+              </Typography>
+            </ListItemText>
+          </MenuItem>
           
           <MenuItem 
             onClick={handleLogout}
@@ -164,6 +294,177 @@ const UserMenu: React.FC<UserMenuProps> = ({ onLogout, isAdminPage }) => {
             </ListItemText>
           </MenuItem>
         </Menu>
+
+        {/* Update Profile Dialog */}
+        <Dialog 
+          open={updateProfileOpen} 
+          onClose={() => setUpdateProfileOpen(false)}
+          maxWidth="xs"
+          fullWidth
+          PaperProps={{
+            sx: {
+              borderRadius: 3,
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(20px)',
+            }
+          }}
+        >
+          <DialogTitle sx={{ 
+            textAlign: 'center', 
+            fontWeight: 700, 
+            fontSize: 20,
+            color: '#2d3748',
+            pb: 1
+          }}>
+            Cập nhật thông tin cá nhân
+          </DialogTitle>
+          <DialogContent>
+            <TextField
+              autoFocus
+              margin="dense"
+              label="Họ và tên"
+              fullWidth
+              variant="outlined"
+              value={fullname}
+              onChange={(e) => setFullname(e.target.value)}
+              sx={{
+                mt: 2,
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2,
+                }
+              }}
+            />
+          </DialogContent>
+          <DialogActions sx={{ p: 3, pt: 1 }}>
+            <Button 
+              onClick={() => setUpdateProfileOpen(false)}
+              sx={{ 
+                borderRadius: 2,
+                fontWeight: 600,
+                px: 3
+              }}
+            >
+              Hủy
+            </Button>
+            <Button 
+              onClick={handleUpdateProfile}
+              variant="contained"
+              disabled={loading}
+              sx={{ 
+                borderRadius: 2,
+                fontWeight: 600,
+                px: 3,
+                background: 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #45a049 0%, #3d8b40 100%)',
+                }
+              }}
+            >
+              {loading ? 'Đang cập nhật...' : 'Cập nhật'}
+            </Button>
+          </DialogActions>
+        </Dialog>
+
+        {/* Change Password Dialog */}
+        <Dialog 
+          open={changePasswordOpen} 
+          onClose={() => setChangePasswordOpen(false)}
+          maxWidth="xs"
+          fullWidth
+          PaperProps={{
+            sx: {
+              borderRadius: 3,
+              background: 'rgba(255, 255, 255, 0.95)',
+              backdropFilter: 'blur(20px)',
+            }
+          }}
+        >
+          <DialogTitle sx={{ 
+            textAlign: 'center', 
+            fontWeight: 700, 
+            fontSize: 20,
+            color: '#2d3748',
+            pb: 1
+          }}>
+            Đổi mật khẩu
+          </DialogTitle>
+          <DialogContent>
+            <TextField
+              autoFocus
+              margin="dense"
+              label="Mật khẩu hiện tại"
+              type="password"
+              fullWidth
+              variant="outlined"
+              value={oldPassword}
+              onChange={(e) => setOldPassword(e.target.value)}
+              sx={{
+                mt: 2,
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2,
+                }
+              }}
+            />
+            <TextField
+              margin="dense"
+              label="Mật khẩu mới"
+              type="password"
+              fullWidth
+              variant="outlined"
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              sx={{
+                mt: 2,
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2,
+                }
+              }}
+            />
+            <TextField
+              margin="dense"
+              label="Xác nhận mật khẩu mới"
+              type="password"
+              fullWidth
+              variant="outlined"
+              value={confirmPassword}
+              onChange={(e) => setConfirmPassword(e.target.value)}
+              sx={{
+                mt: 2,
+                '& .MuiOutlinedInput-root': {
+                  borderRadius: 2,
+                }
+              }}
+            />
+          </DialogContent>
+          <DialogActions sx={{ p: 3, pt: 1 }}>
+            <Button 
+              onClick={() => setChangePasswordOpen(false)}
+              sx={{ 
+                borderRadius: 2,
+                fontWeight: 600,
+                px: 3
+              }}
+            >
+              Hủy
+            </Button>
+            <Button 
+              onClick={handleChangePassword}
+              variant="contained"
+              disabled={loading}
+              sx={{ 
+                borderRadius: 2,
+                fontWeight: 600,
+                px: 3,
+                background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
+                '&:hover': {
+                  background: 'linear-gradient(135deg, #f57c00 0%, #ef6c00 100%)',
+                }
+              }}
+            >
+              {loading ? 'Đang đổi...' : 'Đổi mật khẩu'}
+            </Button>
+          </DialogActions>
+        </Dialog>
       </>
     );
   }
@@ -293,9 +594,56 @@ const UserMenu: React.FC<UserMenuProps> = ({ onLogout, isAdminPage }) => {
                 </Typography>
               </ListItemText>
             </MenuItem>
-            <Divider sx={{ mx: 2, opacity: 0.3 }} />
           </>
         )}
+
+        <MenuItem 
+          onClick={() => setUpdateProfileOpen(true)}
+          sx={{
+            py: 2,
+            borderRadius: 2,
+            mx: 1,
+            mb: 1,
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              background: 'rgba(76, 175, 80, 0.1)',
+              transform: 'translateX(4px)'
+            }
+          }}
+        >
+          <ListItemIcon>
+            <PersonIcon sx={{ color: '#4caf50' }} />
+          </ListItemIcon>
+          <ListItemText>
+            <Typography sx={{ fontWeight: 600, fontSize: 15 }}>
+              Cập nhật thông tin
+            </Typography>
+          </ListItemText>
+        </MenuItem>
+
+        <MenuItem 
+          onClick={() => setChangePasswordOpen(true)}
+          sx={{
+            py: 2,
+            borderRadius: 2,
+            mx: 1,
+            mb: 1,
+            transition: 'all 0.3s ease',
+            '&:hover': {
+              background: 'rgba(255, 152, 0, 0.1)',
+              transform: 'translateX(4px)'
+            }
+          }}
+        >
+          <ListItemIcon>
+            <LockIcon sx={{ color: '#ff9800' }} />
+          </ListItemIcon>
+          <ListItemText>
+            <Typography sx={{ fontWeight: 600, fontSize: 15 }}>
+              Đổi mật khẩu
+            </Typography>
+          </ListItemText>
+        </MenuItem>
         
         <MenuItem 
           onClick={handleLogout}
@@ -321,6 +669,177 @@ const UserMenu: React.FC<UserMenuProps> = ({ onLogout, isAdminPage }) => {
           </ListItemText>
         </MenuItem>
       </Menu>
+
+      {/* Update Profile Dialog */}
+      <Dialog 
+        open={updateProfileOpen} 
+        onClose={() => setUpdateProfileOpen(false)}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(20px)',
+          }
+        }}
+      >
+        <DialogTitle sx={{ 
+          textAlign: 'center', 
+          fontWeight: 700, 
+          fontSize: 20,
+          color: '#2d3748',
+          pb: 1
+        }}>
+          Cập nhật thông tin cá nhân
+        </DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Họ và tên"
+            fullWidth
+            variant="outlined"
+            value={fullname}
+            onChange={(e) => setFullname(e.target.value)}
+            sx={{
+              mt: 2,
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 2,
+              }
+            }}
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 3, pt: 1 }}>
+          <Button 
+            onClick={() => setUpdateProfileOpen(false)}
+            sx={{ 
+              borderRadius: 2,
+              fontWeight: 600,
+              px: 3
+            }}
+          >
+            Hủy
+          </Button>
+          <Button 
+            onClick={handleUpdateProfile}
+            variant="contained"
+            disabled={loading}
+            sx={{ 
+              borderRadius: 2,
+              fontWeight: 600,
+              px: 3,
+              background: 'linear-gradient(135deg, #4caf50 0%, #45a049 100%)',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #45a049 0%, #3d8b40 100%)',
+              }
+            }}
+          >
+            {loading ? 'Đang cập nhật...' : 'Cập nhật'}
+          </Button>
+        </DialogActions>
+      </Dialog>
+
+      {/* Change Password Dialog */}
+      <Dialog 
+        open={changePasswordOpen} 
+        onClose={() => setChangePasswordOpen(false)}
+        maxWidth="xs"
+        fullWidth
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            background: 'rgba(255, 255, 255, 0.95)',
+            backdropFilter: 'blur(20px)',
+          }
+        }}
+      >
+        <DialogTitle sx={{ 
+          textAlign: 'center', 
+          fontWeight: 700, 
+          fontSize: 20,
+          color: '#2d3748',
+          pb: 1
+        }}>
+          Đổi mật khẩu
+        </DialogTitle>
+        <DialogContent>
+          <TextField
+            autoFocus
+            margin="dense"
+            label="Mật khẩu hiện tại *"
+            type="password"
+            fullWidth
+            variant="outlined"
+            value={oldPassword}
+            onChange={(e) => setOldPassword(e.target.value)}
+            sx={{
+              mt: 2,
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 2,
+              }
+            }}
+          />
+          <TextField
+            margin="dense"
+            label="Mật khẩu mới *"
+            type="password"
+            fullWidth
+            variant="outlined"
+            value={newPassword}
+            onChange={(e) => setNewPassword(e.target.value)}
+            sx={{
+              mt: 2,
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 2,
+              }
+            }}
+          />
+          <TextField
+            margin="dense"
+            label="Xác nhận mật khẩu mới *"
+            type="password"
+            fullWidth
+            variant="outlined"
+            value={confirmPassword}
+            onChange={(e) => setConfirmPassword(e.target.value)}
+            sx={{
+              mt: 2,
+              '& .MuiOutlinedInput-root': {
+                borderRadius: 2,
+              }
+            }}
+          />
+        </DialogContent>
+        <DialogActions sx={{ p: 3, pt: 1 }}>
+          <Button 
+            onClick={() => setChangePasswordOpen(false)}
+            sx={{ 
+              borderRadius: 2,
+              fontWeight: 600,
+              px: 3
+            }}
+          >
+            Hủy
+          </Button>
+          <Button 
+            onClick={handleChangePassword}
+            variant="contained"
+            disabled={loading}
+            sx={{ 
+              borderRadius: 2,
+              fontWeight: 600,
+              px: 3,
+              background: 'linear-gradient(135deg, #ff9800 0%, #f57c00 100%)',
+              '&:hover': {
+                background: 'linear-gradient(135deg, #f57c00 0%, #ef6c00 100%)',
+              }
+            }}
+          >
+            {loading ? 'Đang đổi...' : 'Đổi mật khẩu'}
+          </Button>
+        </DialogActions>
+      </Dialog>
     </>
   );
 };

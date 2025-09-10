@@ -59,8 +59,6 @@ const LoginPage: React.FC = () => {
         showToast(response.message, 'success');
         login(response.data?.user.fullname, response.data?.user.role, response.data?.access_token, response.data?.user.id);
         navigate('/');
-
-        console.log("Login successful");
       } else {
         showToast(response.message || 'Đăng nhập thất bại. Vui lòng thử lại!', 'error');
       }

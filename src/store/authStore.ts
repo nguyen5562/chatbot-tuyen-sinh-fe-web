@@ -9,6 +9,7 @@ interface AuthState {
   token: string | null;
   login: (fullname: any, role: any, token: any, userId: any) => void;
   logout: () => void;
+  updateUser: (fullname: string) => void;
 }
 
 export const useAuthStore = create<AuthState>()(
@@ -38,6 +39,10 @@ export const useAuthStore = create<AuthState>()(
           role: null,
           token: null
         });
+      },
+      
+      updateUser: (fullname: string) => {
+        set({ user: fullname });
       }
     }),
     {
