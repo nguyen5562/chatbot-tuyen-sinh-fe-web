@@ -45,10 +45,19 @@ const deleteUser = async (id: string): Promise<ApiResponse> => {
   });
 };
 
+const changePassword = async (id: string, oldPassword: string, newPassword: string): Promise<ApiResponse> => {
+  return api.makeRequest<ApiResponse>({
+    url: `/user/${id}/change-password`,
+    method: "PUT",
+    data: { oldPassword, newPassword },
+  });
+};
+
 export const userApi = {
   getAllUser,
   createUser,
   // getUserById,
   updateUser,
   deleteUser,
+  changePassword,
 };

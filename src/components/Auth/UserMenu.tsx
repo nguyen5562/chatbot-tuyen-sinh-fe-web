@@ -229,7 +229,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ onLogout, isAdminPage }) => {
           }}
         >
           <Avatar sx={{ 
-            background: 'linear-gradient(135deg, #ff6b6b 0%, #ffa726 100%)', 
+            background: roleIsAdmin ? 'linear-gradient(135deg, #ff6b6b 0%, #ffa726 100%)' : 'linear-gradient(135deg, #667eea 0%, #764ba2 100%)', 
             width: 48, 
             height: 48,
             color: 'white',
@@ -289,7 +289,7 @@ const UserMenu: React.FC<UserMenuProps> = ({ onLogout, isAdminPage }) => {
               </ListItemIcon>
               <ListItemText>
                 <Typography sx={{ fontWeight: 600, fontSize: 15 }}>
-                  Quản trị
+                  Đi đến trang quản trị
                 </Typography>
               </ListItemText>
             </MenuItem>

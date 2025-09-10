@@ -59,10 +59,18 @@ const updateChatTitle = async (
   });
 };
 
+const deleteChat = async (chatId: string): Promise<ApiResponse> => {
+  return api.makeRequest<ApiResponse>({
+    url: `/chat/${chatId}`,
+    method: "DELETE",
+  });
+};
+
 export const chatApi = {
   createChat,
   getChatByUser,
   getChatById,
   sendMessage,
   updateChatTitle,
+  deleteChat,
 };
