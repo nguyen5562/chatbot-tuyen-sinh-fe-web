@@ -164,7 +164,15 @@ const NotFoundPage: React.FC = () => {
               gap: 1
             }}
           >
-            <span style={{ fontSize: '18px' }}>🎓</span>
+            <img 
+              src="/Logo_MTA_new.png" 
+              alt="MTA Logo" 
+              style={{ 
+                width: '18px', 
+                height: '18px', 
+                objectFit: 'contain' 
+              }} 
+            />
             Học viện Kỹ thuật quân sự MTA • ChatBot hỗ trợ tuyển sinh
           </Typography>
         </Box>

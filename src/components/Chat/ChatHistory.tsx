@@ -170,8 +170,16 @@ const ChatHistory: React.FC<Props> = ({ chats, currentChatId, onSelect, onNewCha
             fontWeight: 500
           }}
         >
-          <span style={{ fontSize: '16px' }}>🎓</span>
-          Học viện Công nghệ MTA
+          <img 
+            src="/Logo_MTA_new.png" 
+            alt="MTA Logo" 
+            style={{ 
+              width: '16px', 
+              height: '16px', 
+              objectFit: 'contain' 
+            }} 
+          />
+          Học viện Kỹ thuật quân sự MTA
         </Typography>
       </Box>
     </Box>

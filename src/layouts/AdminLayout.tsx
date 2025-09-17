@@ -40,15 +40,22 @@ const AdminLayout: React.FC<{ children: React.ReactNode }> = ({ children }) => {
               width: 48,
               height: 48,
               borderRadius: '12px',
-              background: '#667eea',
+              background: 'white',
               display: 'flex',
               alignItems: 'center',
               justifyContent: 'center',
-              fontSize: '24px',
-              color: 'white',
-              boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)'
+              boxShadow: '0 4px 12px rgba(102, 126, 234, 0.3)',
+              overflow: 'hidden'
             }}>
-              ⚙️
+              <img 
+                src="/Logo_MTA_new.png" 
+                alt="MTA Logo" 
+                style={{ 
+                  width: '100%', 
+                  height: '100%', 
+                  objectFit: 'contain' 
+                }} 
+              />
             </Box>
             
             {/* Brand Text */}
