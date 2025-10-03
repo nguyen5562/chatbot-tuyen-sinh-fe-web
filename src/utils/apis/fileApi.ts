@@ -7,14 +7,7 @@ const api = createApiInstance(fileApiBaseURL);
 
 const getFiles = async (): Promise<ApiResponse<FileDB[]>> => {
   return api.makeRequest<ApiResponse<FileDB[]>>({
-    url: "/files",
-    method: "GET",
-  });
-};
-
-const getFileById = async (id: string): Promise<ApiResponse<FileDB>> => {
-  return api.makeRequest<ApiResponse<FileDB>>({
-    url: `/files/${id}`,
+    url: "/file",
     method: "GET",
   });
 };
@@ -23,22 +16,24 @@ const createFile = async (
   file: Partial<FileDB>
 ): Promise<ApiResponse<FileDB>> => {
   return api.makeRequest<ApiResponse<FileDB>>({
-    url: "/files",
+    url: "/file",
     method: "POST",
     data: file,
   });
 };
 
-const deleteFile = async (id: string): Promise<ApiResponse> => {
-  return api.makeRequest<ApiResponse>({
-    url: `/files/${id}`,
-    method: "DELETE",
+const checkExits = async (
+  filename: string,
+): Promise<ApiResponse<boolean>> => {
+  return api.makeRequest<ApiResponse<boolean>>({
+    url: `/file/check-exists`,
+    method: "PUT",
+    data: { filename },
   });
 };
 
 export const fileApi = {
   getFiles,
-  getFileById,
   createFile,
-  deleteFile,
+  checkExits,
 };

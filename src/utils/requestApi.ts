@@ -13,6 +13,8 @@ export function createApiInstance(baseURL: string) {
     if (token) {
       config.headers = config.headers || {};
       config.headers.Authorization = `Bearer ${token}`;
+      config.headers["ngrok-skip-browser-warning"] = "true";
+
     }
     return config;
   });

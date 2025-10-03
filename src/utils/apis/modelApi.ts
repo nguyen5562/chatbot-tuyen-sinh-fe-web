@@ -4,6 +4,14 @@ import { createApiInstance } from "../requestApi";
 const modelApiBaseUrl = import.meta.env.VITE_API_MODEL_URL;
 const api = createApiInstance(modelApiBaseUrl);
 
+const uploadAndEmbedding = async (file: File): Promise<string> => {
+  return api.makeRequest<string>({
+    url: "/upload-and-embedding",
+    method: "POST",
+    data: file,
+  });
+};
+
 const getResponse = async (query: string): Promise<string> => {
   return api.makeRequest<string>({
     url: "/get-response",
@@ -46,16 +54,16 @@ const getStreamingResponse = async (
     onToken = () => {},
     onStart = () => {},
     onEnd = () => {},
-    onError = () => {}
+    onError = () => {},
   } = callbacks;
 
   const {
     apiUrl = `${modelApiBaseUrl}/get-response-stream`,
     headers = {},
-    timeout = 60000
+    timeout = 60000,
   } = options;
 
-  let fullResponse = '';
+  let fullResponse = "";
 
   try {
     // Tạo AbortController cho timeout
@@ -64,14 +72,15 @@ const getStreamingResponse = async (
 
     // Gọi API bằng fetch để tạo streaming connection
     const response = await fetch(apiUrl, {
-      method: 'POST',
+      method: "POST",
       headers: {
-        'Content-Type': 'application/json',
-        'Accept': 'text/event-stream',
-        ...headers
+        "Content-Type": "application/json",
+        Accept: "text/event-stream",
+        "ngrok-skip-browser-warning": "true",
+        ...headers,
       },
       body: JSON.stringify({ query } as QueryRequest),
-      signal: controller.signal
+      signal: controller.signal,
     });
 
     clearTimeout(timeoutId);
@@ -81,20 +90,20 @@ const getStreamingResponse = async (
     }
 
     if (!response.body) {
-      throw new Error('Response body is null');
+      throw new Error("Response body is null");
     }
 
     // Đọc stream bằng ReadableStream
     const reader = response.body.getReader();
     const decoder = new TextDecoder();
-    let buffer = '';
+    let buffer = "";
     let pendingData: string | null = null; // lưu JSON chưa đầy đủ
     let isEnded = false;
 
     try {
       while (true) {
         const { done, value } = await reader.read();
-        
+
         if (done) break;
 
         // Decode chunk data với buffer để tránh cắt giữa JSON
@@ -102,20 +111,21 @@ const getStreamingResponse = async (
         buffer += chunk;
 
         // SSE thường phân tách sự kiện bằng dòng trống \n\n, nhưng để an toàn, xử lý theo từng dòng
-        const lines = buffer.split('\n');
+        const lines = buffer.split("\n");
         // giữ lại phần cuối có thể chưa hoàn chỉnh
-        buffer = lines.pop() ?? '';
+        buffer = lines.pop() ?? "";
 
         for (const rawLine of lines) {
           const line = rawLine.trim();
           if (!line) continue; // skip keepalive/dòng trống
-          if (!line.startsWith('data:')) continue; // chỉ quan tâm data
+          if (!line.startsWith("data:")) continue; // chỉ quan tâm data
 
           const payloadPart = line.slice(5).trim(); // bỏ 'data:'
           if (!payloadPart) continue;
 
           // Ghép với phần JSON còn dở trước đó (nếu có)
-          const jsonString: string = (pendingData ? pendingData : '') + payloadPart;
+          const jsonString: string =
+            (pendingData ? pendingData : "") + payloadPart;
 
           let eventObj: any = null;
           try {
@@ -127,24 +137,25 @@ const getStreamingResponse = async (
             continue;
           }
 
-          if (!eventObj || typeof eventObj !== 'object') continue;
+          if (!eventObj || typeof eventObj !== "object") continue;
 
           const eventType = eventObj.type as string | undefined;
           switch (eventType) {
-            case 'start': {
+            case "start": {
               // Có thể có message khởi tạo, nhưng callback không nhận tham số
               onStart();
               break;
             }
-            case 'token': {
-              const token = typeof eventObj.content === 'string' ? eventObj.content : '';
+            case "token": {
+              const token =
+                typeof eventObj.content === "string" ? eventObj.content : "";
               if (token) {
                 fullResponse += token;
                 onToken(token);
               }
               break;
             }
-            case 'end': {
+            case "end": {
               // Có thể có response_length ... Kết thúc stream
               if (!isEnded) {
                 isEnded = true;
@@ -169,14 +180,13 @@ const getStreamingResponse = async (
     if (!isEnded) {
       onEnd(fullResponse);
     }
-
   } catch (error) {
-    console.error('Streaming error:', error);
-    
+    console.error("Streaming error:", error);
+
     if (error instanceof Error) {
       onError(error);
     } else {
-      onError(new Error('Unknown streaming error'));
+      onError(new Error("Unknown streaming error"));
     }
   }
 };
@@ -195,15 +205,20 @@ async function getStreamingResponsePromise(
 ): Promise<string> {
   return new Promise<string>((resolve, reject) => {
     getStreamingResponse(
-      query, 
+      query,
       {
         onToken,
         onEnd: resolve,
-        onError: reject
+        onError: reject,
       },
       options
     );
   });
 }
 
-export const modelApi = { getResponse, getStreamingResponse, getStreamingResponsePromise };
+export const modelApi = {
+  getResponse,
+  getStreamingResponse,
+  getStreamingResponsePromise,
+  uploadAndEmbedding,
+};
