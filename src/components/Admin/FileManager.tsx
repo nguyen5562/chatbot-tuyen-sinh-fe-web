@@ -21,12 +21,14 @@ import ImageIcon from '@mui/icons-material/Image';
 import TextSnippetIcon from '@mui/icons-material/TextSnippet';
 import type { FileDB } from '../../types/file';
 import { fileApi } from '../../utils/apis/fileApi';
+import { modelApi } from '../../utils/apis/modelApi';
 
 const FileManager: React.FC = () => {
   const [files, setFiles] = useState<FileDB[]>([]);
   const { showToast } = useToast();
   const [confirmOpen, setConfirmOpen] = useState(false);
   const [pendingFile, setPendingFile] = useState<File | null>(null);
+  const [uploading, setUploading] = useState(false);
 
   const reloadFiles = useCallback(async () => {
     try {
@@ -53,6 +55,7 @@ const FileManager: React.FC = () => {
 
   const handleConfirmUpload = async () => {
     if (!pendingFile) return;
+    setUploading(true);
     try {
       // API behavior: 200 => chưa tồn tại, 400 => đã tồn tại (throw)
       await fileApi.checkExits(pendingFile.name);
@@ -61,22 +64,32 @@ const FileManager: React.FC = () => {
         const code = (err as { statusCode?: number }).statusCode;
         if (code === 400) {
           showToast('File đã tồn tại!', 'warning');
+          setUploading(false);
           handleCloseConfirm();
           return;
         }
       }
       showToast('Không kiểm tra được tình trạng file', 'error');
+      setUploading(false);
       handleCloseConfirm();
       return;
     }
 
     try {
+      const upRes = await modelApi.uploadAndEmbedding(pendingFile);
+      if (upRes.status !== 'success') {
+        showToast('Upload lên server thất bại', 'error');
+        setUploading(false);
+        handleCloseConfirm();
+        return;
+      }
       await fileApi.createFile({ name: pendingFile.name });
       showToast('Upload file thành công!', 'success');
       await reloadFiles();
     } catch {
       showToast('Upload file thất bại', 'error');
     } finally {
+      setUploading(false);
       handleCloseConfirm();
     }
   };
@@ -211,11 +224,11 @@ const FileManager: React.FC = () => {
           </Box>
         </DialogContent>
         <DialogActions sx={{ p: 2.5, pt: 1.5 }}>
-          <Button onClick={handleCloseConfirm} color="inherit" variant="outlined" sx={{ borderRadius: 2 }}>
+          <Button onClick={handleCloseConfirm} color="inherit" variant="outlined" sx={{ borderRadius: 2 }} disabled={uploading}>
             Hủy
           </Button>
-          <Button onClick={handleConfirmUpload} color="primary" variant="contained" sx={{ borderRadius: 2, fontWeight: 700 }}>
-            Xác nhận
+          <Button onClick={handleConfirmUpload} color="primary" variant="contained" sx={{ borderRadius: 2, fontWeight: 700 }} disabled={uploading}>
+            {uploading ? 'Đang xử lý...' : 'Xác nhận'}
           </Button>
         </DialogActions>
       </Dialog>

@@ -4,11 +4,17 @@ import { createApiInstance } from "../requestApi";
 const modelApiBaseUrl = import.meta.env.VITE_API_MODEL_URL;
 const api = createApiInstance(modelApiBaseUrl);
 
-const uploadAndEmbedding = async (file: File): Promise<string> => {
-  return api.makeRequest<string>({
-    url: "/upload-and-embedding",
+const uploadAndEmbedding = async (file: File): Promise<{status: string, message: string}> => {
+  const formData = new FormData();
+  formData.append("file", file);
+
+  return api.makeRequest<{status: string, message: string}>({
+    url: "/upload-and-embed", // phải đúng với BE
     method: "POST",
-    data: file,
+    data: formData,
+    headers: {
+      "Content-Type": "multipart/form-data",
+    },
   });
 };
 
