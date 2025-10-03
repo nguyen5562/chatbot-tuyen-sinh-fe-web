@@ -1,4 +1,4 @@
-import React, { useState } from 'react';
+import React, { useCallback, useEffect, useState } from 'react';
 import FileUpload from './FileUpload';
 import { useToast } from '../Toast/toastContext';
 import Box from '@mui/material/Box';
@@ -8,69 +8,88 @@ import List from '@mui/material/List';
 import ListItem from '@mui/material/ListItem';
 import ListItemText from '@mui/material/ListItemText';
 import ListItemIcon from '@mui/material/ListItemIcon';
-import ListItemSecondaryAction from '@mui/material/ListItemSecondaryAction';
-import IconButton from '@mui/material/IconButton';
 import Button from '@mui/material/Button';
-import Chip from '@mui/material/Chip';
 import Divider from '@mui/material/Divider';
+import Dialog from '@mui/material/Dialog';
+import DialogTitle from '@mui/material/DialogTitle';
+import DialogContent from '@mui/material/DialogContent';
+import DialogActions from '@mui/material/DialogActions';
 import CloudUploadIcon from '@mui/icons-material/CloudUpload';
 import InsertDriveFileIcon from '@mui/icons-material/InsertDriveFile';
 import PictureAsPdfIcon from '@mui/icons-material/PictureAsPdf';
 import ImageIcon from '@mui/icons-material/Image';
 import TextSnippetIcon from '@mui/icons-material/TextSnippet';
-import DeleteIcon from '@mui/icons-material/Delete';
-import DownloadIcon from '@mui/icons-material/Download';
-import VisibilityIcon from '@mui/icons-material/Visibility';
-
-// Định nghĩa kiểu file
-type FileItem = {
-  id: string;
-  name: string;
-  size: number;
-  type: string;
-  uploadDate: Date;
-};
+import type { FileDB } from '../../types/file';
+import { fileApi } from '../../utils/apis/fileApi';
 
 const FileManager: React.FC = () => {
-  const [files, setFiles] = useState<FileItem[]>([]);
+  const [files, setFiles] = useState<FileDB[]>([]);
   const { showToast } = useToast();
+  const [confirmOpen, setConfirmOpen] = useState(false);
+  const [pendingFile, setPendingFile] = useState<File | null>(null);
+
+  const reloadFiles = useCallback(async () => {
+    try {
+      const res = await fileApi.getFiles();
+      setFiles(res.data ?? []);
+    } catch {
+      showToast('Tải danh sách file thất bại', 'error');
+    }
+  }, [showToast]);
+
+  useEffect(() => {
+    reloadFiles();
+  }, [reloadFiles]);
 
   const handleUpload = (file: File) => {
-    const newFile: FileItem = {
-      id: Date.now().toString(),
-      name: file.name,
-      size: file.size,
-      type: file.type,
-      uploadDate: new Date()
-    };
-    setFiles((prev) => [newFile, ...prev]);
-    showToast('Upload file thành công!', 'success');
+    setPendingFile(file);
+    setConfirmOpen(true);
   };
 
-  const handleDelete = (fileId: string) => {
-    setFiles(prev => prev.filter(f => f.id !== fileId));
-    showToast('Xóa file thành công!', 'success');
+  const handleCloseConfirm = () => {
+    setConfirmOpen(false);
+    setPendingFile(null);
   };
 
-  const getFileIcon = (fileName: string, fileType: string) => {
+  const handleConfirmUpload = async () => {
+    if (!pendingFile) return;
+    try {
+      // API behavior: 200 => chưa tồn tại, 400 => đã tồn tại (throw)
+      await fileApi.checkExits(pendingFile.name);
+    } catch (err) {
+      if (typeof err === 'object' && err && 'statusCode' in err) {
+        const code = (err as { statusCode?: number }).statusCode;
+        if (code === 400) {
+          showToast('File đã tồn tại!', 'warning');
+          handleCloseConfirm();
+          return;
+        }
+      }
+      showToast('Không kiểm tra được tình trạng file', 'error');
+      handleCloseConfirm();
+      return;
+    }
+
+    try {
+      await fileApi.createFile({ name: pendingFile.name });
+      showToast('Upload file thành công!', 'success');
+      await reloadFiles();
+    } catch {
+      showToast('Upload file thất bại', 'error');
+    } finally {
+      handleCloseConfirm();
+    }
+  };
+
+  const getFileIcon = (fileName: string) => {
     const ext = fileName.split('.').pop()?.toLowerCase();
-    if (fileType.startsWith('image/')) return <ImageIcon sx={{ color: '#4CAF50' }} />;
+    if (ext === 'jpg' || ext === 'jpeg' || ext === 'png') return <ImageIcon sx={{ color: '#4CAF50' }} />;
     if (ext === 'pdf') return <PictureAsPdfIcon sx={{ color: '#F44336' }} />;
     if (ext === 'txt' || ext === 'doc' || ext === 'docx') return <TextSnippetIcon sx={{ color: '#2196F3' }} />;
     return <InsertDriveFileIcon sx={{ color: '#9E9E9E' }} />;
   };
 
-  const formatFileSize = (bytes: number) => {
-    if (bytes === 0) return '0 Bytes';
-    const k = 1024;
-    const sizes = ['Bytes', 'KB', 'MB', 'GB'];
-    const i = Math.floor(Math.log(bytes) / Math.log(k));
-    return parseFloat((bytes / Math.pow(k, i)).toFixed(2)) + ' ' + sizes[i];
-  };
-
-  const formatDate = (date: Date) => {
-    return date.toLocaleString('vi-VN');
-  };
+  // Bỏ size/date vì không có trong types
 
   return (
     <Box sx={{ 
@@ -134,12 +153,72 @@ const FileManager: React.FC = () => {
             💡 Hướng dẫn upload:
           </Typography>
           <Typography variant="body2" sx={{ lineHeight: 1.6, color: '#718096' }}>
-            • Hỗ trợ các định dạng: PDF, DOC, DOCX, TXT, JPG, PNG<br/>
-            • Kích thước tối đa: 10MB<br/>
-            • Tên file nên có ý nghĩa và dễ tìm kiếm
+            • Hỗ trợ các định dạng: PDF, DOC, DOCX<br/>
           </Typography>
         </Box>
       </Paper>
+
+      {/* Confirm Upload Dialog */}
+      <Dialog 
+        open={confirmOpen} 
+        onClose={handleCloseConfirm} 
+        fullWidth 
+        maxWidth="xs"
+        PaperProps={{
+          sx: {
+            borderRadius: 3,
+            overflow: 'hidden',
+          }
+        }}
+      >
+        <DialogTitle sx={{ p: 2.5, bgcolor: 'rgba(102, 126, 234, 0.08)' }}>
+          <Box sx={{ display: 'flex', alignItems: 'center', gap: 1.5 }}>
+            <Box sx={{
+              width: 40,
+              height: 40,
+              borderRadius: '50%',
+              display: 'grid',
+              placeItems: 'center',
+              bgcolor: 'rgba(102,126,234,0.15)',
+              color: '#667eea'
+            }}>
+              <CloudUploadIcon />
+            </Box>
+            <Typography variant="h6" sx={{ fontWeight: 800, color: '#2d3748' }}>
+              Xác nhận upload
+            </Typography>
+          </Box>
+        </DialogTitle>
+        <DialogContent sx={{ p: 2.5 }}>
+          <Typography variant="body2" style={{paddingTop: '10px'}} sx={{ color: '#4a5568', mb: 1 }}>
+            Bạn có muốn upload file sau?
+          </Typography>
+          <Box sx={{
+            display: 'inline-flex',
+            alignItems: 'center',
+            gap: 1,
+            px: 1.25,
+            py: 0.75,
+            borderRadius: 2,
+            bgcolor: 'rgba(102,126,234,0.08)',
+            color: '#2d3748',
+            border: '1px solid rgba(102,126,234,0.2)'
+          }}>
+            <InsertDriveFileIcon sx={{ color: '#667eea' }} />
+            <Typography variant="body2" sx={{ fontWeight: 700 }}>
+              {pendingFile?.name}
+            </Typography>
+          </Box>
+        </DialogContent>
+        <DialogActions sx={{ p: 2.5, pt: 1.5 }}>
+          <Button onClick={handleCloseConfirm} color="inherit" variant="outlined" sx={{ borderRadius: 2 }}>
+            Hủy
+          </Button>
+          <Button onClick={handleConfirmUpload} color="primary" variant="contained" sx={{ borderRadius: 2, fontWeight: 700 }}>
+            Xác nhận
+          </Button>
+        </DialogActions>
+      </Dialog>
 
       {/* Files List Section */}
       <Paper 
@@ -160,14 +239,6 @@ const FileManager: React.FC = () => {
         }}>
           <Typography variant="h5" sx={{ fontWeight: 700, display: 'flex', alignItems: 'center', gap: 2 }}>
             📚 Danh sách File ({files.length})
-            <Chip 
-              label={`${formatFileSize(files.reduce((sum, f) => sum + f.size, 0))}`} 
-              sx={{ 
-                bgcolor: 'rgba(255,255,255,0.2)', 
-                color: 'white',
-                fontWeight: 600
-              }} 
-            />
           </Typography>
         </Box>
 
@@ -200,7 +271,7 @@ const FileManager: React.FC = () => {
                   }}
                 >
                   <ListItemIcon sx={{ mr: 2 }}>
-                    {getFileIcon(file.name, file.type)}
+                    {getFileIcon(file.name)}
                   </ListItemIcon>
                   <ListItemText
                     primary={
@@ -208,51 +279,8 @@ const FileManager: React.FC = () => {
                         {file.name}
                       </Typography>
                     }
-                    secondary={
-                      <Box sx={{ display: 'flex', gap: 2, alignItems: 'center', flexWrap: 'wrap' }}>
-                        <Chip 
-                          label={formatFileSize(file.size)} 
-                          size="small" 
-                          sx={{ bgcolor: 'rgba(102, 126, 234, 0.1)', color: '#667eea', fontWeight: 600 }}
-                        />
-                        <Typography variant="caption" sx={{ color: '#718096' }}>
-                          {formatDate(file.uploadDate)}
-                        </Typography>
-                      </Box>
-                    }
+                    secondary={null}
                   />
-                  <ListItemSecondaryAction>
-                    <Box sx={{ display: 'flex', gap: 1 }}>
-                      <IconButton 
-                        size="small"
-                        sx={{ 
-                          color: '#2196F3',
-                          '&:hover': { bgcolor: 'rgba(33, 150, 243, 0.1)' }
-                        }}
-                      >
-                        <VisibilityIcon />
-                      </IconButton>
-                      <IconButton 
-                        size="small"
-                        sx={{ 
-                          color: '#4CAF50',
-                          '&:hover': { bgcolor: 'rgba(76, 175, 80, 0.1)' }
-                        }}
-                      >
-                        <DownloadIcon />
-                      </IconButton>
-                      <IconButton 
-                        size="small"
-                        onClick={() => handleDelete(file.id)}
-                        sx={{ 
-                          color: '#F44336',
-                          '&:hover': { bgcolor: 'rgba(244, 67, 54, 0.1)' }
-                        }}
-                      >
-                        <DeleteIcon />
-                      </IconButton>
-                    </Box>
-                  </ListItemSecondaryAction>
                 </ListItem>
                 {index < files.length - 1 && <Divider />}
               </React.Fragment>
@@ -271,26 +299,8 @@ const FileManager: React.FC = () => {
             alignItems: 'center'
           }}>
             <Typography variant="body2" sx={{ fontWeight: 500, color: '#718096' }}>
-              Tổng cộng: {files.length} file • {formatFileSize(files.reduce((sum, f) => sum + f.size, 0))}
+              Tổng cộng: {files.length} file
             </Typography>
-            <Button
-              variant="outlined"
-              color="error"
-              onClick={() => {
-                setFiles([]);
-                showToast('Đã xóa tất cả file!', 'info');
-              }}
-              sx={{ 
-                borderRadius: 3,
-                fontWeight: 600,
-                '&:hover': {
-                  transform: 'translateY(-2px)',
-                  boxShadow: '0 4px 20px rgba(244, 67, 54, 0.3)'
-                }
-              }}
-            >
-              Xóa tất cả
-            </Button>
           </Box>
         )}
       </Paper>

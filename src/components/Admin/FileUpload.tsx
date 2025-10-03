@@ -133,15 +133,8 @@ const FileUpload: React.FC<Props> = ({ onUpload }) => {
         ref={fileInputRef}
         style={{ display: 'none' }}
         onChange={handleFileChange}
-        accept=".pdf,.doc,.docx,.txt,.jpg,.jpeg,.png"
+        accept=".pdf,.doc,.docx"
       />
-
-      {/* Upload Instructions */}
-      <Box sx={{ mt: 3, textAlign: 'center' }}>
-        <Typography variant="body2" color="text.secondary" sx={{ fontWeight: 500 }}>
-          Định dạng hỗ trợ: PDF, DOC, DOCX, TXT, JPG, PNG • Tối đa 10MB
-        </Typography>
-      </Box>
     </Box>
   );
 };
